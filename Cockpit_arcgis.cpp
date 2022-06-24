@@ -16,8 +16,6 @@
 // Other headers
 #include "Cockpit_arcgis.h"
 
-#include <QUrl>
-
 #include "Map.h"
 #include "MapGraphicsView.h"
 
@@ -41,12 +39,14 @@ Cockpit_arcgis::Cockpit_arcgis(QWidget* parent /*=nullptr*/):
     // Set map to map view
     m_mapView->setMap(m_map);
 
-    // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
-    m_mapView->locationDisplay()->start();
-
     // set the mapView as the central widget
     setCentralWidget(m_mapView);
 
+    // get location information
+    // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
+    m_mapView->locationDisplay()->start();
+
+    // call the functions
     displayShapeFile(dataPath);
     addGeometry();
     setupViewpoint();
@@ -57,6 +57,8 @@ Cockpit_arcgis::~Cockpit_arcgis()
 {
 }
 
+/* function out-of-line definitions */
+
 // focus on a specified area of the map with animation
 void Cockpit_arcgis::setupViewpoint(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
@@ -64,8 +66,8 @@ void Cockpit_arcgis::setupViewpoint(){
     m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
 }
 
+// load vector layer and add it to the map
 void Cockpit_arcgis::displayShapeFile(QUrl path){
-    //std::unique_ptr<ShapefileFeatureTable> ftr_table = std::make_unique<ShapefileFeatureTable>(path, this);
     std::unique_ptr<ServiceFeatureTable> ftr_table = std::make_unique<ServiceFeatureTable>(path, this);
     std::unique_ptr<FeatureLayer> ftr_layer = std::make_unique<FeatureLayer>(ftr_table.get(), this);
     m_mapView->setViewpointCenter(ftr_layer->fullExtent().center(), 80000);
@@ -73,6 +75,7 @@ void Cockpit_arcgis::displayShapeFile(QUrl path){
     m_map->operationalLayers()->append(ftr_layer.get());
 }
 
+// add marker to a specific coordinate
 void Cockpit_arcgis::addGeometry(){
     Point coordPoint{11.38043, 48.06679, SpatialReference::wgs84()};
     QVariantMap attr;
@@ -81,8 +84,8 @@ void Cockpit_arcgis::addGeometry(){
     // const QString homePath = QDir::homePath();
     // QString iconsPath{"/dev/cpp/arcgis/icons/mapMarker.png"};
     // QImage icon{homePath + iconsPath};
-    QUrl icon_url{"https://raw.githubusercontent.com/koraykoca/GUI-GIS/main/mapMarker.png"};
-    std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon_url, this);
+    QUrl icon{"https://raw.githubusercontent.com/koraykoca/GUI-GIS/main/mapMarker.png"};
+    std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 
     std::unique_ptr<Graphic> graphic_element = std::make_unique<Graphic>(coordPoint, attr, marker.get(), this);
