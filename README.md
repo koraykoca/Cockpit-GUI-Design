@@ -12,6 +12,15 @@ https://developers.arcgis.com/
 
 * Go to Layers section and click on __*Import Data*__, then select the zip file from the repo. Then copy the Url of a layer and paste it into the __*data_url*__ variable in Cockpit_arcgis.cpp source file.
 
+## Contributions
+
+* Before a contribution or adding a new feature, a corresponding issue should be created first. This issue should clarify what the contribution will be about.
+
+* All commits should follow this specific pattern: __*Issue\-\d+*__
+  Example: created layout issue-2
+
+* Merge requests must be approved by at least one developer. 
+
 ## ArcGIS Runtime API for Qt
 
 * Main Page:
