@@ -2,11 +2,18 @@
 
 ## System Setup
 
-* to install ArcGIS Runtime SDK v100.14.1 for Qt API on Linux:
+* Install ArcGIS Runtime SDK __*v100.14.1*__ for Qt API on Linux. Follow the steps at the link:
 https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
 
+* Go to your terminal and paste the following command:
+  mkdir -p ~/dev/cpp/arcgis \
+  && cd ~/dev/cpp/arcgis \
+  && git clone https://git.unibw.de/angewandte-ki-f-r-dynamische-systeme/cockpit-arcgis.git
+
+* Open the Qt Creator and then click on __*Open Project*__. Go to your cloned folder and select .pro file. 
+
 * Create your own developer account on this website: 
-https://developers.arcgis.com/
+  https://developers.arcgis.com/
 
 * Go to your Dashboard and copy your __*API Key*__, then paste it into the __*apiKey*__ variable in the source main.cpp file.
 
