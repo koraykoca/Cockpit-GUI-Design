@@ -25,7 +25,7 @@ class MapGraphicsView;
 #include <QMainWindow>
 #include "Point.h"
 
-extern const QUrl data_path;
+extern const QUrl data_url;
 
 class cockpitArcgis : public QMainWindow
 {

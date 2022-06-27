@@ -26,7 +26,7 @@
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-const QUrl data_path{"https://services8.arcgis.com/tKQOIjWaFIsNYLhy/arcgis/rest/services/vector_daten/FeatureServer/12"};
+const QUrl data_url{"https://services8.arcgis.com/tKQOIjWaFIsNYLhy/arcgis/rest/services/vector_daten/FeatureServer/12"};
 
 using namespace Esri::ArcGISRuntime;
 
@@ -53,7 +53,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_mapView->locationDisplay()->start();
 
     // call the functions
-    add_layer(data_path);
+    add_layer(data_url);
     setup_view_point();
     add_marker();
 }
