@@ -16,6 +16,8 @@
 // Other headers
 #include "Cockpit_arcgis.h"
 
+#include <QDir>
+
 #include "Map.h"
 #include "MapGraphicsView.h"
 
@@ -24,11 +26,9 @@
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-const QUrl data_path{"https://services-eu1.arcgis.com/jqApksCDxo9OIytM/arcgis/rest/services/vector_daten/FeatureServer/12"};
+const QUrl data_path{"https://services8.arcgis.com/tKQOIjWaFIsNYLhy/arcgis/rest/services/vector_daten/FeatureServer/12"};
 
 using namespace Esri::ArcGISRuntime;
-
-
 
 cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
@@ -88,10 +88,9 @@ void cockpitArcgis::add_marker(){
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
-    // const QString homePath = QDir::homePath();
-    // QString iconsPath{"/dev/cpp/arcgis/icons/mapMarker.png"};
-    // QImage icon{homePath + iconsPath};
-    QUrl icon{"https://raw.githubusercontent.com/koraykoca/GUI-GIS/main/mapMarker.png"};
+    const QString homePath = QDir::homePath();
+    QString iconsPath{"/dev/cpp/arcgis/cockpit_arcgis/mapMarker.png"};
+    QImage icon{homePath + iconsPath};
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 
@@ -101,15 +100,15 @@ void cockpitArcgis::add_marker(){
     m_mapView->graphicsOverlays()->append(graphic_overlay.get());
 }
 
+// refresh marker position
 void cockpitArcgis::update_marker(Point new_point){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(new_point);
 }
-
 
 // get coordinate of click
 void cockpitArcgis::get_coordinate(QMouseEvent& event){
     Point map_point = m_mapView->screenToLocation(event.x(), event.y());
     auto map_coordinates = CoordinateFormatter::toLatitudeLongitude(map_point, LatitudeLongitudeFormat::DecimalDegrees, 4);
     map_point = CoordinateFormatter::fromLatitudeLongitude(map_coordinates, SpatialReference::wgs84());
-    update_marker(map_point);
+    update_marker(std::move(map_point));
 }
