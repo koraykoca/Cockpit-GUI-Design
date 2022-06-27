@@ -25,7 +25,7 @@ class MapGraphicsView;
 #include <QMainWindow>
 #include "Point.h"
 
-extern const QUrl data_path;
+extern const QUrl data_url;
 
 class cockpitArcgis : public QMainWindow
 {
@@ -43,7 +43,8 @@ private:
 
     void setup_view_point();
     void add_layer(QUrl);
-    void add_marker(Esri::ArcGISRuntime::Point);
+    void add_marker();
+    void update_marker(Esri::ArcGISRuntime::Point);
 };
 
 #endif // COCKPIT_ARCGIS_H
