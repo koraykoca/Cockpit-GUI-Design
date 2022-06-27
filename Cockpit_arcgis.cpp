@@ -28,6 +28,8 @@ const QUrl data_path{"https://services-eu1.arcgis.com/jqApksCDxo9OIytM/arcgis/re
 
 using namespace Esri::ArcGISRuntime;
 
+
+
 cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
 {
@@ -53,6 +55,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // call the functions
     add_layer(data_path);
     setup_view_point();
+    add_marker();
 }
 
 // destructor
@@ -80,8 +83,8 @@ void cockpitArcgis::add_layer(QUrl path){
 }
 
 // add marker to a specific coordinate
-void cockpitArcgis::add_marker(Point map_point){
-    Point coordPoint{map_point.x(), map_point.y(), SpatialReference::wgs84()};
+void cockpitArcgis::add_marker(){
+    Point start_point;
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
@@ -92,10 +95,14 @@ void cockpitArcgis::add_marker(Point map_point){
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 
-    std::unique_ptr<Graphic> graphic_element = std::make_unique<Graphic>(coordPoint, attr, marker.get(), this);
+    std::unique_ptr<Graphic> graphic_element = std::make_unique<Graphic>(start_point, attr, marker.get(), this);
     std::unique_ptr<GraphicsOverlay> graphic_overlay = std::make_unique<GraphicsOverlay>(this);
     graphic_overlay->graphics()->append(graphic_element.get());
     m_mapView->graphicsOverlays()->append(graphic_overlay.get());
+}
+
+void cockpitArcgis::update_marker(Point new_point){
+    m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(new_point);
 }
 
 
@@ -104,5 +111,5 @@ void cockpitArcgis::get_coordinate(QMouseEvent& event){
     Point map_point = m_mapView->screenToLocation(event.x(), event.y());
     auto map_coordinates = CoordinateFormatter::toLatitudeLongitude(map_point, LatitudeLongitudeFormat::DecimalDegrees, 4);
     map_point = CoordinateFormatter::fromLatitudeLongitude(map_coordinates, SpatialReference::wgs84());
-    add_marker(map_point);
+    update_marker(map_point);
 }
