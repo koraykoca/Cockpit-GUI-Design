@@ -23,25 +23,27 @@ class MapGraphicsView;
 }
 
 #include <QMainWindow>
+#include "Point.h"
 
-extern const QUrl dataPath;
+extern const QUrl data_path;
 
-class Cockpit_arcgis : public QMainWindow
+class cockpitArcgis : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit Cockpit_arcgis(QWidget* parent = nullptr);
-    ~Cockpit_arcgis() override;
+    explicit cockpitArcgis(QWidget* parent = nullptr);
+    ~cockpitArcgis() override;
 
 public slots:
+    void get_coordinate(QMouseEvent&);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
 
-    void setupViewpoint();
-    void displayShapeFile(QUrl);
-    void addGeometry();
+    void setup_view_point();
+    void add_layer(QUrl);
+    void add_marker(Esri::ArcGISRuntime::Point);
 };
 
 #endif // COCKPIT_ARCGIS_H

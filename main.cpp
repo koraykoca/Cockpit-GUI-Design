@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     // location services. Create a new API key or access existing API keys from
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
-    const QString apiKey = QString("F_pjEBRSC_gHWgt8p-7f5p-kO17IzklKosF28DplpD4ikqzWfS2XpM9GI64dhKZaMQ9i_jyT1N050MjYSFAznz4eKi7weRWqebwyjVaM6FCN2P3GwMta3GjwX5eXUPmDW9LVbWDZwP1c09qT6ITNNQ..");
+    const QString apiKey = QString("1ih6Y-pyzOuf1FNeselaXEj75Z5mPhPLv9MQRHE56STKPKByz7wxFrUXkN35APK1UchyOfHFG9NbzRnulZa0o3zhqkzqgc02OMctPTorPW5q0QVcZr2-eX4CvL_D7JCX");
     if (apiKey.isEmpty())
     {
         qWarning() << "Use of Esri location services, including basemaps, requires" <<
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     //    return 1;
     //  }
 
-    Cockpit_arcgis applicationWindow;
+    cockpitArcgis applicationWindow;
     applicationWindow.setMinimumWidth(800);
     applicationWindow.setMinimumHeight(600);
     applicationWindow.show();
