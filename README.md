@@ -2,8 +2,15 @@
 
 ## System Setup
 
-to install ArcGIS Runtime SDK for Qt API on Linux:
+* to install ArcGIS Runtime SDK v100.14.1 for Qt API on Linux:
 https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
+
+* Create your own developer account on this website: 
+https://developers.arcgis.com/
+
+* Go to your Dashboard and copy your __*API Key*__, then paste it into the __*apiKey*__ variable in the source main.cpp file.
+
+* Go to Layers section and click on __*Import Data*__, then select the zip file from the repo. Then copy the Url of a layer and paste it into the __*data_url*__ variable in Cockpit_arcgis.cpp source file.
 
 ## ArcGIS Runtime API for Qt
 
@@ -35,3 +42,5 @@ https://developers.arcgis.com/qt/programming-patterns/best-practices/
 
 * Qt Creator Best Practices:
 https://web.stanford.edu/dept/cs_edu/resources/qt/recommended-settings
+
+
