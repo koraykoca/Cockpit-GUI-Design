@@ -23,3 +23,11 @@ https://developers.arcgis.com/qt/cpp/sample-code/
 
 * Tutorial for the interaction with ArcGIS online GUI:
 https://learn.arcgis.com/de/projects/get-started-with-arcgis-online/
+
+## Best Practices
+
+* ArcGIS Best Practices:
+https://developers.arcgis.com/qt/programming-patterns/best-practices/
+
+* Qt Creator Best Practices:
+https://web.stanford.edu/dept/cs_edu/resources/qt/recommended-settings
