@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     // location services. Create a new API key or access existing API keys from
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
-    const QString apiKey = QString("AAPK79d58ed494ae4429a9f3968e7fa31f7fACrrkeKHSRryqIVzCc2b-TD-oRFFam9WM5ethP9y0J4SF1E21ugsyk6k9jrmipy5");
+    const QString apiKey = QString("");
     if (apiKey.isEmpty())
     {
         qWarning() << "Use of Esri location services, including basemaps, requires" <<
