@@ -13,6 +13,10 @@ https://developers.arcgis.com/qt/
 * C++ API Reference:
 https://developers.arcgis.com/qt/cpp/api-reference/
 
+## ArcGIS Developer Glossary
+
+* https://developers.arcgis.com/documentation/glossary/
+
 ## Tutorials
 
 * Tutorials for ArcGIS Runtime API for Qt:
