@@ -19,15 +19,16 @@
 #include "Map.h"
 #include "MapGraphicsView.h"
 
-#include <FeatureLayer.h>
-#include <PictureMarkerSymbol.h>
-#include <ServiceFeatureTable.h>
+#include "FeatureLayer.h"
+#include "PictureMarkerSymbol.h"
+#include "ServiceFeatureTable.h"
+#include "CoordinateFormatter.h"
 
-const QUrl dataPath{"https://services-eu1.arcgis.com/jqApksCDxo9OIytM/arcgis/rest/services/vector_daten/FeatureServer/12"};
+const QUrl data_path{"https://services-eu1.arcgis.com/jqApksCDxo9OIytM/arcgis/rest/services/vector_daten/FeatureServer/12"};
 
 using namespace Esri::ArcGISRuntime;
 
-Cockpit_arcgis::Cockpit_arcgis(QWidget* parent /*=nullptr*/):
+cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
 {
     // Create a map using the ArcGISTopographic BasemapStyle
@@ -42,32 +43,35 @@ Cockpit_arcgis::Cockpit_arcgis(QWidget* parent /*=nullptr*/):
     // set the mapView as the central widget
     setCentralWidget(m_mapView);
 
+    //create the action behaviours
+    connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(get_coordinate(QMouseEvent&)));
+
     // get location information
     // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
     m_mapView->locationDisplay()->start();
 
     // call the functions
-    displayShapeFile(dataPath);
-    addGeometry();
-    setupViewpoint();
+    add_layer(data_path);
+    setup_view_point();
 }
 
 // destructor
-Cockpit_arcgis::~Cockpit_arcgis()
+cockpitArcgis::~cockpitArcgis()
 {
+    m_mapView->locationDisplay()->stop();
 }
 
 /* function out-of-line definitions */
 
 // focus on a specified area of the map with animation
-void Cockpit_arcgis::setupViewpoint(){
+void cockpitArcgis::setup_view_point(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
-    const Viewpoint viewpoint(center, 100000.0);
-    m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
+    const Viewpoint view_point(center, 100000.0);
+    m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
 }
 
 // load vector layer and add it to the map
-void Cockpit_arcgis::displayShapeFile(QUrl path){
+void cockpitArcgis::add_layer(QUrl path){
     std::unique_ptr<ServiceFeatureTable> ftr_table = std::make_unique<ServiceFeatureTable>(path, this);
     std::unique_ptr<FeatureLayer> ftr_layer = std::make_unique<FeatureLayer>(ftr_table.get(), this);
     m_mapView->setViewpointCenter(ftr_layer->fullExtent().center(), 80000);
@@ -76,8 +80,8 @@ void Cockpit_arcgis::displayShapeFile(QUrl path){
 }
 
 // add marker to a specific coordinate
-void Cockpit_arcgis::addGeometry(){
-    Point coordPoint{11.38043, 48.06679, SpatialReference::wgs84()};
+void cockpitArcgis::add_marker(Point map_point){
+    Point coordPoint{map_point.x(), map_point.y(), SpatialReference::wgs84()};
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
@@ -92,4 +96,13 @@ void Cockpit_arcgis::addGeometry(){
     std::unique_ptr<GraphicsOverlay> graphic_overlay = std::make_unique<GraphicsOverlay>(this);
     graphic_overlay->graphics()->append(graphic_element.get());
     m_mapView->graphicsOverlays()->append(graphic_overlay.get());
+}
+
+
+// get coordinate of click
+void cockpitArcgis::get_coordinate(QMouseEvent& event){
+    Point map_point = m_mapView->screenToLocation(event.x(), event.y());
+    auto map_coordinates = CoordinateFormatter::toLatitudeLongitude(map_point, LatitudeLongitudeFormat::DecimalDegrees, 4);
+    map_point = CoordinateFormatter::fromLatitudeLongitude(map_coordinates, SpatialReference::wgs84());
+    add_marker(map_point);
 }
