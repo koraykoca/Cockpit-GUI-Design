@@ -92,8 +92,7 @@ void cockpitArcgis::addMarker(){
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
-    QString iconsPath{"/dev/cpp/arcgis/cockpit_arcgis/mapMarker.png"};
-    QImage icon{homePath + iconsPath};
+    QImage icon{":/mapMarker.png"};  // get image from resources
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 
