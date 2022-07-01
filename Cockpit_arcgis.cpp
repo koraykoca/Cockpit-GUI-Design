@@ -26,11 +26,11 @@
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-const QString home_path = QDir::homePath();
-const QString yaml_path{"/dev/cpp/arcgis/cockpit_arcgis/param/gui_param_file.yaml"};
-YAML::Node config = YAML::LoadFile((home_path + yaml_path).toStdString());
-QString url_addr = config["data_url"].as<QString>();
-const QUrl data_url{url_addr};
+const QString homePath = QDir::homePath();
+const QString yamlPath{"/dev/cpp/arcgis/cockpit_arcgis/param/gui_param_file.yaml"};
+YAML::Node config = YAML::LoadFile((homePath + yamlPath).toStdString());
+QString urlAddr = config["data_url"].as<QString>();
+const QUrl dataUrl{urlAddr};
 
 using namespace Esri::ArcGISRuntime;
 
@@ -50,16 +50,16 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     setCentralWidget(m_mapView);
 
     //create the action behaviours
-    connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(get_coordinate(QMouseEvent&)));
+    connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
 
     // get location information
     // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
     m_mapView->locationDisplay()->start();
 
     // call the functions
-    add_layer(data_url);
-    setup_view_point();
-    add_marker();
+    addLayer(dataUrl);
+    setupViewPoint();
+    addMarker();
 }
 
 // destructor
@@ -71,47 +71,47 @@ cockpitArcgis::~cockpitArcgis()
 /* class functions out-of-line definitions */
 
 // focus on a specified area of the map with animation
-void cockpitArcgis::setup_view_point(){
+void cockpitArcgis::setupViewPoint(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
     const Viewpoint view_point(center, 100000.0);
     m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
 }
 
 // load vector layer and add it to the map
-void cockpitArcgis::add_layer(QUrl path){
-    std::unique_ptr<ServiceFeatureTable> ftr_table = std::make_unique<ServiceFeatureTable>(path, this);
-    std::unique_ptr<FeatureLayer> ftr_layer = std::make_unique<FeatureLayer>(ftr_table.get(), this);
-    m_mapView->setViewpointCenter(ftr_layer->fullExtent().center(), 80000);
+void cockpitArcgis::addLayer(QUrl path){
+    std::unique_ptr<ServiceFeatureTable> ftrTable = std::make_unique<ServiceFeatureTable>(path, this);
+    std::unique_ptr<FeatureLayer> ftrLayer = std::make_unique<FeatureLayer>(ftrTable.get(), this);
+    m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
     // m_map->operationalLayers()->clear();
-    m_map->operationalLayers()->append(ftr_layer.get());
+    m_map->operationalLayers()->append(ftrLayer.get());
 }
 
 // add marker to a specific coordinate
-void cockpitArcgis::add_marker(){
-    Point start_point;
+void cockpitArcgis::addMarker(){
+    Point startPoint;
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
     QString iconsPath{"/dev/cpp/arcgis/cockpit_arcgis/mapMarker.png"};
-    QImage icon{home_path + iconsPath};
+    QImage icon{homePath + iconsPath};
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 
-    std::unique_ptr<Graphic> graphic_element = std::make_unique<Graphic>(start_point, attr, marker.get(), this);
-    std::unique_ptr<GraphicsOverlay> graphic_overlay = std::make_unique<GraphicsOverlay>(this);
-    graphic_overlay->graphics()->append(graphic_element.get());
-    m_mapView->graphicsOverlays()->append(graphic_overlay.get());
+    std::unique_ptr<Graphic> graphicElement = std::make_unique<Graphic>(startPoint, attr, marker.get(), this);
+    std::unique_ptr<GraphicsOverlay> graphicOverlay = std::make_unique<GraphicsOverlay>(this);
+    graphicOverlay->graphics()->append(graphicElement.get());
+    m_mapView->graphicsOverlays()->append(graphicOverlay.get());
 }
 
 // refresh marker position
-void cockpitArcgis::update_marker(Point new_point){
-    m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(new_point);
+void cockpitArcgis::updateMarker(Point newPoint){
+    m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
 // get coordinate of click
-void cockpitArcgis::get_coordinate(QMouseEvent& event){
-    Point map_point = m_mapView->screenToLocation(event.x(), event.y());
-    auto map_coordinates = CoordinateFormatter::toLatitudeLongitude(map_point, LatitudeLongitudeFormat::DecimalDegrees, 4);
-    map_point = CoordinateFormatter::fromLatitudeLongitude(map_coordinates, SpatialReference::wgs84());
-    update_marker(std::move(map_point));
+void cockpitArcgis::getCoordinate(QMouseEvent& event){
+    Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
+    auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
+    mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
+    updateMarker(std::move(mapPoint));
 }

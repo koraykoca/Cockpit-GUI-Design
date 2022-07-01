@@ -26,10 +26,10 @@ class MapGraphicsView;
 #include "Point.h"
 #include "yaml-cpp/qtyaml.h"
 
-extern const QString home_path;
-extern const QString yaml_path;
+extern const QString homePath;
+extern const QString yamlPath;
 extern YAML::Node config;
-extern const QUrl data_url;
+extern const QUrl dataUrl;
 
 class cockpitArcgis : public QMainWindow
 {
@@ -39,16 +39,16 @@ public:
     ~cockpitArcgis() override;
 
 public slots:
-    void get_coordinate(QMouseEvent&);
+    void getCoordinate(QMouseEvent&);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
 
-    void setup_view_point();
-    void add_layer(QUrl);
-    void add_marker();
-    void update_marker(Esri::ArcGISRuntime::Point);
+    void setupViewPoint();
+    void addLayer(QUrl);
+    void addMarker();
+    void updateMarker(Esri::ArcGISRuntime::Point);
 };
 
 #endif // COCKPIT_ARCGIS_H
