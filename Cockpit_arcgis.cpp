@@ -26,7 +26,11 @@
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-const QUrl data_url{"https://services8.arcgis.com/tKQOIjWaFIsNYLhy/arcgis/rest/services/vector_daten/FeatureServer/12"};
+const QString home_path = QDir::homePath();
+const QString yaml_path{"/dev/cpp/arcgis/cockpit_arcgis/param/gui_param_file.yaml"};
+YAML::Node config = YAML::LoadFile((home_path + yaml_path).toStdString());
+QString url_addr = config["data_url"].as<QString>();
+const QUrl data_url{url_addr};
 
 using namespace Esri::ArcGISRuntime;
 
@@ -64,7 +68,7 @@ cockpitArcgis::~cockpitArcgis()
     m_mapView->locationDisplay()->stop();
 }
 
-/* function out-of-line definitions */
+/* class functions out-of-line definitions */
 
 // focus on a specified area of the map with animation
 void cockpitArcgis::setup_view_point(){
@@ -88,9 +92,8 @@ void cockpitArcgis::add_marker(){
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
 
-    const QString homePath = QDir::homePath();
     QString iconsPath{"/dev/cpp/arcgis/cockpit_arcgis/mapMarker.png"};
-    QImage icon{homePath + iconsPath};
+    QImage icon{home_path + iconsPath};
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
     marker->setOffsetY(12);
 

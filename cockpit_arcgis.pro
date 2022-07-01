@@ -18,6 +18,7 @@ CONFIG += c++14
 
 # additional modules are pulled in via arcgisruntime.pri
 QT += widgets
+LIBS += -L/usr/local/lib -lyaml-cpp
 
 equals(QT_MAJOR_VERSION, 5) {
     lessThan(QT_MINOR_VERSION, 15) {

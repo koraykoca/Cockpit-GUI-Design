@@ -14,9 +14,7 @@
 #include <QApplication>
 #include <QMessageBox>
 
-
 #include "ArcGISRuntimeEnvironment.h"
-
 #include "Cockpit_arcgis.h"
 
 using namespace Esri::ArcGISRuntime;
@@ -37,7 +35,7 @@ int main(int argc, char *argv[])
     // location services. Create a new API key or access existing API keys from
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
-    const QString apiKey = QString("");
+    const QString apiKey = config["apiKey"].as<QString>();
     if (apiKey.isEmpty())
     {
         qWarning() << "Use of Esri location services, including basemaps, requires" <<

@@ -24,7 +24,11 @@ class MapGraphicsView;
 
 #include <QMainWindow>
 #include "Point.h"
+#include "yaml-cpp/qtyaml.h"
 
+extern const QString home_path;
+extern const QString yaml_path;
+extern YAML::Node config;
 extern const QUrl data_url;
 
 class cockpitArcgis : public QMainWindow
