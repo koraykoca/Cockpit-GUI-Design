@@ -3,7 +3,10 @@
 ## System Setup
 
 * Install ArcGIS Runtime SDK __*v100.14.1*__ for Qt API on Linux. Follow the steps at the link:
-https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
+  https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
+
+* Install yaml.cpp library:
+  https://github.com/jbeder/yaml-cpp
 
 * Go to your terminal and paste the following command:
   mkdir -p ~/dev/cpp/arcgis \
@@ -15,9 +18,9 @@ https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
 * Create your own developer account on this website: 
   https://developers.arcgis.com/
 
-* Go to your Dashboard and copy your __*API Key*__, then paste it into the __*apiKey*__ variable in the source main.cpp file.
+* Go to your Dashboard and copy your __*API Key*__, then replace it with the value of __*data_url*__ key in param/gui_param_file.yaml file.
 
-* Go to Layers section and click on __*Import Data*__, then select the zip file from the repo. Then copy the Url of a layer and paste it into the __*data_url*__ variable in Cockpit_arcgis.cpp source file.
+* Go to Layers section and click on __*Import Data*__, select the zip file from the repo. Then copy the Url of a layer and  replace it with the value of __*data_url*__ key in param/gui_param_file.yaml file.
 
 ## Contributions
 
