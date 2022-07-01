@@ -29,6 +29,8 @@
 
 * Before a contribution or adding a new feature, a corresponding issue should be created first. This issue should clarify what the contribution will be about.
 
+* camelCase case type is being used for class, variable and function names.
+
 * All commits should follow this specific pattern: __*Issue\-\d+*__
   Example: created layout issue-2
 
