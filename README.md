@@ -5,8 +5,11 @@
 * Install ArcGIS Runtime SDK __*v100.14.1*__ for Qt API on Linux. Follow the steps at the link:
   https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
 
-* Install yaml.cpp library:
+* Install __*yaml.cpp*__ library:
   https://github.com/jbeder/yaml-cpp
+
+* Download Qt wrapper for yaml.cpp and move it to the __*/usr/include/yaml-cpp*__ directory.
+  https://gist.github.com/brcha/d392b2fe5f1e427cc8a6
 
 * Go to your terminal and paste the following command:
   mkdir -p ~/dev/cpp/arcgis \
