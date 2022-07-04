@@ -49,7 +49,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     ui->setupUi(this);
 
     // Make the app. fullscreen
-    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    // this->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
 
     // Create layout for map
     layoutMap = std::make_unique<QVBoxLayout>();
@@ -64,17 +64,15 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
 
     /* Integration of AirManager Panels */
-    QWindow* leftPanelContainer = QWindow::fromWinId(0x2200002);
+    QWindow* leftPanelContainer = QWindow::fromWinId(0x4c00002);
     QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
-
     QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
     layoutLeftPanel->addWidget(leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
 
-    QWindow* rightPanelContainer = QWindow::fromWinId(0x2600002);
+    QWindow* rightPanelContainer = QWindow::fromWinId(0x5200002);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
-
     QVBoxLayout* layoutRightPanel = new QVBoxLayout();
     layoutRightPanel->addWidget(rightPanelWidget);
     layoutRightPanel->setContentsMargins(0, 0, 0, 0);
@@ -82,6 +80,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
+    connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
     // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
@@ -101,7 +100,6 @@ cockpitArcgis::~cockpitArcgis()
 }
 
 /* class functions out-of-line definitions */
-
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
@@ -139,10 +137,19 @@ void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
+// display coordinate while hovering the mouse over the map
+void cockpitArcgis::displayCoordinate(QMouseEvent& event){
+    Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
+    auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
+    qDebug() << "showingg";
+    ui->textCoordinate->setText(mapCoordinates);
+}
+
 // get coordinate of click
 void cockpitArcgis::getCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
     mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
+    ui->textSelectedCoordinate->setText(mapCoordinates);
     updateMarker(std::move(mapPoint));
 }

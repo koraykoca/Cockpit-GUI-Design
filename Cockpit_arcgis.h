@@ -43,6 +43,7 @@ public:
 
 public slots:
     void getCoordinate(QMouseEvent&);
+    void displayCoordinate(QMouseEvent&);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
