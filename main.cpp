@@ -14,15 +14,25 @@
 #include <QApplication>
 #include <QMessageBox>
 
+#include <QDir>
+#include <QXmlStreamReader>
+#include <QFile>
+#include <QDebug>
+
 #include "ArcGISRuntimeEnvironment.h"
 #include "Cockpit_arcgis.h"
 
 using namespace Esri::ArcGISRuntime;
 
+
+
+
+
 int main(int argc, char *argv[])
 {
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication application(argc, argv);
+
 
     // Use of Esri location services, including basemaps and geocoding, requires
     // either an ArcGIS identity or an API key. For more information see
@@ -35,7 +45,36 @@ int main(int argc, char *argv[])
     // location services. Create a new API key or access existing API keys from
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
-    const QString apiKey = config["apiKey"].as<QString>();
+
+    QString apiKey;
+    QFile xmlFile(":/guiParamFile.xml");
+
+    if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
+        qDebug() << "Cannot read file" << xmlFile.errorString();
+        exit(0);
+    }
+
+    QXmlStreamReader xmlReader(&xmlFile);
+
+    if (xmlReader.readNextStartElement()){
+
+        if (xmlReader.name() =="dataParameters") {
+
+            while(xmlReader.readNextStartElement()) {
+                if (xmlReader.name() == "apiKey"){
+
+                    apiKey = xmlReader.readElementText();
+                    break;
+                }
+                else {
+                    xmlReader.skipCurrentElement();
+                }
+            }
+
+        }
+    }
+    xmlFile.close();
+
     if (apiKey.isEmpty())
     {
         qWarning() << "Use of Esri location services, including basemaps, requires" <<

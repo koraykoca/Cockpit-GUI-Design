@@ -1,0 +1,8 @@
+<dataParameters>
+
+<apiKey>AAPKb459925502a64d2f92d1a4b071d2b858-rOdEVQNuvsTY-TowB-oBv5mjetMhW4PNoDTGneqDkQKz9R2ondOJWJLunRrkefB</apiKey>
+    <data>
+        <dataUrl>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/27</dataUrl>
+        <dataUrl>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/23</dataUrl>
+    </data>
+</dataParameters>

@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>mapMarker.png</file>
+        <file>guiParamFile.xml</file>
     </qresource>
 </RCC>
