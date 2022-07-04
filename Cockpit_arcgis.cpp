@@ -12,18 +12,17 @@
 
 // C++ API headers
 #include "Basemap.h"
-
-// Other headers
-#include "Cockpit_arcgis.h"
-#include <QDir>
-
 #include "Map.h"
 #include "MapGraphicsView.h"
-
 #include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
+
+// Other headers
+#include "Cockpit_arcgis.h"
+#include <QDir>
+#include <QWindow>
 
 const QString homePath = QDir::homePath();
 const QString yamlPath{"/dev/cpp/arcgis/cockpit_arcgis/param/gui_param_file.yaml"};
@@ -49,14 +48,37 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Make this widget as parent
     ui->setupUi(this);
 
+    // Make the app. fullscreen
+    this->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+
     // Create layout for map
     layoutMap = std::make_unique<QVBoxLayout>();
 
     // Add map widget to the layout
     layoutMap->addWidget(m_mapView);
 
+    // Remove margins for window borders
+    layoutMap->setContentsMargins(0, 0, 0, 0);
+
     // Set the layout to the related frame in the GUI
     ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
+
+    /* Integration of AirManager Panels */
+    QWindow* leftPanelContainer = QWindow::fromWinId(0x2200002);
+    QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
+
+    QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
+    layoutLeftPanel->addWidget(leftPanelWidget);
+    layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
+    ui->airManagerLeft->setLayout(layoutLeftPanel);
+
+    QWindow* rightPanelContainer = QWindow::fromWinId(0x2600002);
+    QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
+
+    QVBoxLayout* layoutRightPanel = new QVBoxLayout();
+    layoutRightPanel->addWidget(rightPanelWidget);
+    layoutRightPanel->setContentsMargins(0, 0, 0, 0);
+    ui->airManagerRight->setLayout(layoutRightPanel);
 
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
