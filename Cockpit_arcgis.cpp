@@ -50,13 +50,13 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     ui->setupUi(this);
 
     // Create layout for map
-    layoutMap = new QVBoxLayout();
+    layoutMap = std::make_unique<QVBoxLayout>();
 
     // Add map widget to the layout
     layoutMap->addWidget(m_mapView);
 
     // Set the layout to the related frame in the GUI
-    ui->mapFrame->setLayout(layoutMap);
+    ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
 
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
@@ -76,7 +76,6 @@ cockpitArcgis::~cockpitArcgis()
 {
     m_mapView->locationDisplay()->stop();
     delete ui;
-    delete layoutMap;
 }
 
 /* class functions out-of-line definitions */

@@ -47,8 +47,8 @@ public slots:
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
-    Ui::MainWindow* ui;
-    QVBoxLayout  * layoutMap;
+    Ui::MainWindow*                             ui;
+    std::unique_ptr<QVBoxLayout>                layoutMap;
 
     void setupViewPoint();
     void addLayer(QUrl);
