@@ -46,3 +46,6 @@ HEADERS += \
 
 RESOURCES += \
     Cockpit_arcgis.qrc
+
+FORMS += \
+    Cockpit_arcgis.ui

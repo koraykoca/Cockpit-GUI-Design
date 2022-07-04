@@ -15,7 +15,6 @@
 
 // Other headers
 #include "Cockpit_arcgis.h"
-
 #include <QDir>
 
 #include "Map.h"
@@ -36,6 +35,7 @@ using namespace Esri::ArcGISRuntime;
 
 cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
+  , ui(new Ui::MainWindow)
 {
     // Create a map using the ArcGISTopographic BasemapStyle
     m_map = new Map(BasemapStyle::ArcGISTopographic, this);
@@ -46,8 +46,17 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Set map to map view
     m_mapView->setMap(m_map);
 
-    // set the mapView as the central widget
-    setCentralWidget(m_mapView);
+    // Make this widget as parent
+    ui->setupUi(this);
+
+    // Create layout for map
+    layoutMap = new QVBoxLayout();
+
+    // Add map widget to the layout
+    layoutMap->addWidget(m_mapView);
+
+    // Set the layout to the related frame in the GUI
+    ui->mapFrame->setLayout(layoutMap);
 
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
@@ -66,6 +75,8 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 cockpitArcgis::~cockpitArcgis()
 {
     m_mapView->locationDisplay()->stop();
+    delete ui;
+    delete layoutMap;
 }
 
 /* class functions out-of-line definitions */
