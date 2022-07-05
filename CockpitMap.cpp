@@ -10,7 +10,7 @@
 // See the Sample code usage restrictions document for further information.
 //
 
-#include "Cockpit.h"
+#include "CockpitMap.h"
 
 #include "Basemap.h"
 #include "Map.h"
@@ -29,7 +29,7 @@
 
 using namespace Esri::ArcGISRuntime;
 
-Cockpit::Cockpit(QObject* parent /* = nullptr */):
+CockpitMap::CockpitMap(QObject* parent /* = nullptr */):
     QObject(parent),    m_map ( new Map(BasemapStyle::ArcGISTopographic, this))
 
 
@@ -38,18 +38,18 @@ Cockpit::Cockpit(QObject* parent /* = nullptr */):
 
 }
 
-Cockpit::~Cockpit()
+CockpitMap::~CockpitMap()
 {
     m_mapView->locationDisplay()->stop();
 }
 
-MapQuickView* Cockpit::mapView() const
+MapQuickView* CockpitMap::mapView() const
 {
     return m_mapView;
 }
 
 // Set the view (created in QML)
-void Cockpit::setMapView(MapQuickView* mapView)
+void CockpitMap::setMapView(MapQuickView* mapView)
 {
     if (!mapView || mapView == m_mapView)
     {
@@ -68,7 +68,7 @@ void Cockpit::setMapView(MapQuickView* mapView)
 }
 
 // set the view, created in qml
-void Cockpit::setupViewPoint() {
+void CockpitMap::setupViewPoint() {
 
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
     const Viewpoint view_point(center, 100000.0);
@@ -76,7 +76,7 @@ void Cockpit::setupViewPoint() {
 }
 
 // load vector layer and add it to the map
-void Cockpit::addLayer(QUrl path){
+void CockpitMap::addLayer(QUrl path){
     std::unique_ptr<ServiceFeatureTable> ftrTable = std::make_unique<ServiceFeatureTable>(path, this);
     std::unique_ptr<FeatureLayer> ftrLayer = std::make_unique<FeatureLayer>(ftrTable.get(), this);
     m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
@@ -84,7 +84,7 @@ void Cockpit::addLayer(QUrl path){
     m_map->operationalLayers()->append(ftrLayer.get());
 }
 
-void Cockpit::addMarker(){
+void CockpitMap::addMarker(){
     Point startPoint;
     QVariantMap attr;
     attr["name"] = "Selected Coordinate";
@@ -100,19 +100,19 @@ void Cockpit::addMarker(){
 }
 
 // refresh marker position
-void Cockpit::updateMarker(Point newPoint){
+void CockpitMap::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
 // get coordinate of click
-void Cockpit::getCoordinates(QMouseEvent& event){
+void CockpitMap::getCoordinates(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
     mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
     updateMarker(std::move(mapPoint));
 }
 
-void Cockpit::setLayersUrlVector(){
+void CockpitMap::setLayersUrlVector(){
 
     QFile xmlFile(":/Resources/guiParamFile.xml");
 

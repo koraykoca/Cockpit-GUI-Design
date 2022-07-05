@@ -11,14 +11,14 @@
 //
 
 import QtQuick.Controls 2.12
-import Esri.cockpit 1.0
+import Cockpit.CockpitMap 1.0
 
 ApplicationWindow {
     visible: true
     width: 800
     height: 600
 
-    CockpitForm {
+    CockpitMapForm {
         anchors.fill: parent
     }
 }

@@ -10,8 +10,8 @@
 // See the Sample code usage restrictions document for further information.
 //
 
-#ifndef COCKPIT_H
-#define COCKPIT_H
+#ifndef COCKPITMAP_H
+#define COCKPITMAP_H
 
 namespace Esri
 {
@@ -25,15 +25,15 @@ class Point;
 class QMouseEvent;
 #include <QObject>
 
-class Cockpit : public QObject
+class CockpitMap : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(Esri::ArcGISRuntime::MapQuickView* mapView READ mapView WRITE setMapView NOTIFY mapViewChanged)
 
 public:
-    explicit Cockpit(QObject* parent = nullptr);
-    ~Cockpit() override;
+    explicit CockpitMap(QObject* parent = nullptr);
+    ~CockpitMap() override;
 
 public slots:
     void getCoordinates(QMouseEvent& event);
@@ -43,6 +43,7 @@ signals:
 
 private:
     Esri::ArcGISRuntime::MapQuickView* mapView() const;
+
     void setMapView(Esri::ArcGISRuntime::MapQuickView* mapView);
     void setupViewPoint();
     void addLayer(QUrl);
@@ -57,4 +58,4 @@ private:
     std::vector<QUrl> m_urlVectors;
 };
 
-#endif // COCKPIT_H
+#endif // COCKPITMAP_H

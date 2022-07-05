@@ -10,7 +10,7 @@
 // See the Sample code usage restrictions document for further information.
 //
 
-#include "Cockpit.h"
+#include "CockpitMap.h"
 
 #include "ArcGISRuntimeEnvironment.h"
 #include "MapQuickView.h"
@@ -85,10 +85,10 @@ int main(int argc, char *argv[])
     // ArcGISRuntimeEnvironment::setLicense("Place license string in here");
 
     // Register the map view for QML
-    qmlRegisterType<MapQuickView>("Esri.cockpit", 1, 0, "MapView");
+    qmlRegisterType<MapQuickView>("Cockpit.MapView", 1, 0, "MapView");
 
     // Register the Cockpit (QQuickItem) for QML
-    qmlRegisterType<Cockpit>("Esri.cockpit", 1, 0, "Cockpit");
+    qmlRegisterType<CockpitMap>("Cockpit.CockpitMap", 1, 0, "CockpitMap");
 
     // Initialize application view
     QQmlApplicationEngine engine;

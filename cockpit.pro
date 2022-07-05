@@ -33,11 +33,11 @@ ARCGIS_RUNTIME_VERSION = 100.14.1
 include($$PWD/arcgisruntime.pri)
 
 HEADERS += \
-    Cockpit.h
+    CockpitMap.h
 
 SOURCES += \
-    main.cpp \
-    Cockpit.cpp
+    CockpitMap.cpp \
+    main.cpp
 
 RESOURCES += \
     qml/qml.qrc \

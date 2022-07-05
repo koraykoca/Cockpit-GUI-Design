@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/qml">
         <file>main.qml</file>
-		<file>CockpitForm.qml</file>
+        <file>CockpitMapForm.qml</file>
     </qresource>
 </RCC>

@@ -12,7 +12,8 @@
 
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import Esri.cockpit 1.0
+import Cockpit.MapView 1.0
+import Cockpit.CockpitMap 1.0
 
 Item {
 
@@ -25,8 +26,9 @@ Item {
     }
 
     // Declare the C++ instance which creates the map etc. and supply the view
-    Cockpit {
+    CockpitMap {
         id: model
         mapView: view
+
     }
 }
