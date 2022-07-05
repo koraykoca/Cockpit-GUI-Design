@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
     QString apiKey;
-    QFile xmlFile(":/guiParamFile.xml");
+    QFile xmlFile(":/Resources/guiParamFile.xml");
 
     if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
         qDebug() << "Cannot read file" << xmlFile.errorString();
