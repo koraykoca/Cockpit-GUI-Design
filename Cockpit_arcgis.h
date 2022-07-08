@@ -23,9 +23,10 @@ class MapGraphicsView;
 }
 
 #include <QMainWindow>
+#include "ui_Cockpit_arcgis.h"
+#include <QVBoxLayout>
+
 #include "Point.h"
-
-
 
 class cockpitArcgis : public QMainWindow
 {
@@ -36,10 +37,13 @@ public:
 
 public slots:
     void getCoordinate(QMouseEvent&);
+    void displayCoordinate(QMouseEvent&);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
+    Ui::MainWindow*                             ui;
+    std::unique_ptr<QVBoxLayout>                layoutMap;
 
 
     std::vector<QUrl> m_urlVectors;
