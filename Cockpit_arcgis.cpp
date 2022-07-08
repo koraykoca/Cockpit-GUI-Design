@@ -37,7 +37,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
   , ui(new Ui::MainWindow)
 {
     // Create a map using the ArcGISTopographic BasemapStyle
-    m_map = new Map(BasemapStyle::ArcGISTopographic, this);
+    m_map = new Map(BasemapStyle::ArcGISNova, this);
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -64,14 +64,14 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
 
     /* Integration of AirManager Panels */
-    QWindow* leftPanelContainer = QWindow::fromWinId(0x4c00002);
+    QWindow* leftPanelContainer = QWindow::fromWinId(0x4800002);
     QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
     QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
     layoutLeftPanel->addWidget(leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
 
-    QWindow* rightPanelContainer = QWindow::fromWinId(0x5200002);
+    QWindow* rightPanelContainer = QWindow::fromWinId(0x4a00002);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
     QVBoxLayout* layoutRightPanel = new QVBoxLayout();
     layoutRightPanel->addWidget(rightPanelWidget);
@@ -141,7 +141,6 @@ void cockpitArcgis::updateMarker(Point newPoint){
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
-    qDebug() << "showingg";
     ui->textCoordinate->setText(mapCoordinates);
 }
 
