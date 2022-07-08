@@ -15,8 +15,8 @@
 
 // Other headers
 #include "Cockpit_arcgis.h"
-
-#include <QDir>
+#include <QXmlStreamReader>
+#include <QFile>
 
 #include "Map.h"
 #include "MapGraphicsView.h"
@@ -26,11 +26,10 @@
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-const QString homePath = QDir::homePath();
-const QString yamlPath{"/dev/cpp/arcgis/cockpit_arcgis/param/gui_param_file.yaml"};
-YAML::Node config = YAML::LoadFile((homePath + yamlPath).toStdString());
-QString urlAddr = config["data_url"].as<QString>();
-const QUrl dataUrl{urlAddr};
+
+// Read API Keys and URLS from XML file
+
+
 
 using namespace Esri::ArcGISRuntime;
 
@@ -57,7 +56,9 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_mapView->locationDisplay()->start();
 
     // call the functions
-    addLayer(dataUrl);
+    setLayersUrlVector();
+    qDebug()<<m_urlVectors[0];
+    addLayer(m_urlVectors[0]);
     setupViewPoint();
     addMarker();
 }
@@ -113,4 +114,44 @@ void cockpitArcgis::getCoordinate(QMouseEvent& event){
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
     mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
     updateMarker(std::move(mapPoint));
+}
+
+void cockpitArcgis::setLayersUrlVector(){
+
+    QFile xmlFile(":/guiParamFile.xml");
+
+    if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
+        qDebug() << "Cannot read file" << xmlFile.errorString();
+        exit(0);
+    }
+
+    QXmlStreamReader xmlReader(&xmlFile);
+
+    if (xmlReader.readNextStartElement()){
+
+        if (xmlReader.name() =="dataParameters") {
+
+            while(xmlReader.readNextStartElement()) {
+                if (xmlReader.name() == "data"){
+                    while(xmlReader.readNextStartElement()){
+
+                        if(xmlReader.name()== "dataUrl"){
+                            QUrl u(xmlReader.readElementText());
+                            m_urlVectors.push_back(u);
+                        }
+                        break;
+                    }
+
+
+
+                }
+                else {
+                    xmlReader.skipCurrentElement();
+                }
+            }
+
+        }
+
+
+    }
 }

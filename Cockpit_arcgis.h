@@ -24,12 +24,8 @@ class MapGraphicsView;
 
 #include <QMainWindow>
 #include "Point.h"
-#include "yaml-cpp/qtyaml.h"
 
-extern const QString homePath;
-extern const QString yamlPath;
-extern YAML::Node config;
-extern const QUrl dataUrl;
+
 
 class cockpitArcgis : public QMainWindow
 {
@@ -45,10 +41,14 @@ private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
 
+
+    std::vector<QUrl> m_urlVectors;
+
     void setupViewPoint();
     void addLayer(QUrl);
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
+    void setLayersUrlVector();
 };
 
 #endif // COCKPIT_ARCGIS_H
