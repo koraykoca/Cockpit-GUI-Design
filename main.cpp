@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     // your ArcGIS for Developers dashboard (https://links.esri.com/arcgis-api-keys).
 
 
+    // read API Key from xml file
     QString apiKey;
     QFile xmlFile(":/guiParamFile.xml");
 
