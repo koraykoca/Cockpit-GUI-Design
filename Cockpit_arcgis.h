@@ -25,6 +25,8 @@ class MapGraphicsView;
 #include <QMainWindow>
 #include "ui_Cockpit_arcgis.h"
 #include <QVBoxLayout>
+#include <QMenu>
+#include <QCheckBox>
 
 #include "Point.h"
 
@@ -44,15 +46,19 @@ private:
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
     Ui::MainWindow*                             ui;
     std::unique_ptr<QVBoxLayout>                layoutMap;
-
+    QMenu*                                      layerMenu;
+    QList<QAction*>                             actionList;
 
     std::vector<QUrl> m_urlVectors;
+    std::vector<QString> m_layerNames;
+    std::vector<QCheckBox*> checkBoxes;    
 
     void setupViewPoint();
     void addLayer(QUrl);
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
     void setLayersUrlVector();
+    void createLayerMenu(std::vector<QString> &);
 };
 
 #endif // COCKPIT_ARCGIS_H

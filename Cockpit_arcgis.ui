@@ -82,8 +82,8 @@
      <rect>
       <x>990</x>
       <y>700</y>
-      <width>371</width>
-      <height>31</height>
+      <width>370</width>
+      <height>30</height>
      </rect>
     </property>
    </widget>
@@ -92,8 +92,8 @@
      <rect>
       <x>560</x>
       <y>700</y>
-      <width>181</width>
-      <height>31</height>
+      <width>180</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="html">
@@ -109,8 +109,8 @@ p, li { white-space: pre-wrap; }
      <rect>
       <x>740</x>
       <y>700</y>
-      <width>251</width>
-      <height>31</height>
+      <width>250</width>
+      <height>30</height>
      </rect>
     </property>
     <property name="html">
@@ -121,14 +121,20 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
-   <widget class="QFrame" name="airManagerBottom">
+   <widget class="QFrame" name="menuFrame">
     <property name="geometry">
      <rect>
       <x>560</x>
       <y>730</y>
-      <width>801</width>
-      <height>281</height>
+      <width>800</width>
+      <height>350</height>
      </rect>
+    </property>
+    <property name="whatsThis">
+     <string comment="Show/Hide different layers"/>
+    </property>
+    <property name="autoFillBackground">
+     <bool>true</bool>
     </property>
     <property name="frameShape">
      <enum>QFrame::StyledPanel</enum>
@@ -136,6 +142,22 @@ p, li { white-space: pre-wrap; }
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
+    <widget class="QToolButton" name="layersToolButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>181</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="whatsThis">
+      <string comment="Show/Hide different layers"/>
+     </property>
+     <property name="text">
+      <string>Select Layers</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>

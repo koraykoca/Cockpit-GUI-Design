@@ -18,6 +18,7 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <QWindow>
+#include <QWidgetAction>
 
 #include "Map.h"
 #include "MapGraphicsView.h"
@@ -86,8 +87,9 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     // call the functions
     setLayersUrlVector();
-    qDebug()<<m_urlVectors[0];
     addLayer(m_urlVectors[0]);
+    if (m_layerNames.size())
+        createLayerMenu(m_layerNames);
     setupViewPoint();
     addMarker();
 }
@@ -100,6 +102,7 @@ cockpitArcgis::~cockpitArcgis()
 }
 
 /* class functions out-of-line definitions */
+
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
@@ -137,7 +140,7 @@ void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
-// display coordinate while hovering the mouse over the map
+// display coordinate while hovering the mouse (keep pressing) over the map
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
@@ -151,6 +154,20 @@ void cockpitArcgis::getCoordinate(QMouseEvent& event){
     mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
     ui->textSelectedCoordinate->setText(mapCoordinates);
     updateMarker(std::move(mapPoint));
+}
+
+// construct layer menu
+void cockpitArcgis::createLayerMenu(std::vector<QString>& name){
+    ui->layersToolButton->setPopupMode(QToolButton::InstantPopup);
+    layerMenu = new QMenu();
+    for(unsigned long i=0 ; i<name.size(); i++){
+        checkBoxes.push_back(new QCheckBox(name[i]));
+        auto action = new QWidgetAction(checkBoxes[i]);
+        action->setDefaultWidget(checkBoxes[i]);
+        actionList.append(action);
+    }
+    layerMenu->addActions(actionList);
+    ui->layersToolButton->setMenu(layerMenu);
 }
 
 void cockpitArcgis::setLayersUrlVector(){
@@ -170,25 +187,25 @@ void cockpitArcgis::setLayersUrlVector(){
 
             while(xmlReader.readNextStartElement()) {
                 if (xmlReader.name() == "data"){
-                    while(xmlReader.readNextStartElement()){
 
-                        if(xmlReader.name()== "dataUrl"){
+                    while(xmlReader.readNextStartElement()){
+                        if(xmlReader.name()== "url"){
                             QUrl u(xmlReader.readElementText());
                             m_urlVectors.push_back(u);
                         }
-                        break;
+                        if(xmlReader.name()== "name"){
+                            QString n(xmlReader.readElementText());
+                            m_layerNames.push_back(n);
+                        }
                     }
-
-
-
                 }
                 else {
                     xmlReader.skipCurrentElement();
                 }
             }
-
         }
-
-
     }
 }
+
+
+
