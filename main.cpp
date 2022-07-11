@@ -18,15 +18,18 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <QDebug>
+#include <QObject>
 
 #include "ArcGISRuntimeEnvironment.h"
 #include "Cockpit_arcgis.h"
+#include "zmqreciever.h"
 
 using namespace Esri::ArcGISRuntime;
 
 int main(int argc, char *argv[])
 {
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    qRegisterMetaType<QVector<double> >("QVector"); //https://forum.qt.io/topic/82220/qobject-connect-cannot-queue-arguments-message/2
     QApplication application(argc, argv);
 
 
@@ -95,7 +98,7 @@ int main(int argc, char *argv[])
     //  });
 
     //  if (ArcGISRuntimeEnvironment::initialize() == false)
-    //  {
+    //  {ac
     //    application.quit();
     //    return 1;
     //  }
@@ -104,6 +107,9 @@ int main(int argc, char *argv[])
     applicationWindow.setMinimumWidth(800);
     applicationWindow.setMinimumHeight(600);
     applicationWindow.show();
+
+
+
 
     return application.exec();
 }

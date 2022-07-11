@@ -17,7 +17,7 @@ TEMPLATE = app
 CONFIG += c++14
 
 # additional modules are pulled in via arcgisruntime.pri
-QT += widgets xml
+QT += widgets xml positioning
 #LIBS += -L/usr/local/lib -lyaml-cpp
 
 equals(QT_MAJOR_VERSION, 5) {
@@ -37,10 +37,17 @@ win32:CONFIG += \
 
 SOURCES += \
     main.cpp \
-    Cockpit_arcgis.cpp
+    Cockpit_arcgis.cpp \
+    positionsourcesimulator.cpp \
+    zmqreciever.cpp
 
 HEADERS += \
-    Cockpit_arcgis.h
+    Cockpit_arcgis.h \
+    positionsourcesimulator.h \
+    zmqreciever.h
+
+LIBS += -L/usr/lib -lzmq
+
 
 #-------------------------------------------------------------------------------
 

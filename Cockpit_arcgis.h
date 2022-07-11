@@ -19,6 +19,8 @@ namespace ArcGISRuntime
 {
 class Map;
 class MapGraphicsView;
+class Point;
+class SimulatedLocationDataSource;
 }
 }
 
@@ -26,7 +28,9 @@ class MapGraphicsView;
 #include "ui_Cockpit_arcgis.h"
 #include <QVBoxLayout>
 
-#include "Point.h"
+#include "positionsourcesimulator.h"
+
+
 
 class cockpitArcgis : public QMainWindow
 {
@@ -38,21 +42,24 @@ public:
 public slots:
     void getCoordinate(QMouseEvent&);
     void displayCoordinate(QMouseEvent&);
+    void planeGpsPositionChanged(QVector<  double> newPosition);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
     Ui::MainWindow*                             ui;
     std::unique_ptr<QVBoxLayout>                layoutMap;
-
+    PositionSourceSimulator* m_positionSourceSimulator = nullptr;
 
     std::vector<QUrl> m_urlVectors;
+
 
     void setupViewPoint();
     void addLayer(QUrl);
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
     void setLayersUrlVector();
+    void readGpsFromXplane();
 };
 
 #endif // COCKPIT_ARCGIS_H

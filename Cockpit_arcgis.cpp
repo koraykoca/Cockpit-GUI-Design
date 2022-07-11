@@ -18,13 +18,20 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <QWindow>
-
+#include <QGeoPositionInfo>
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
 #include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
+#include "AbstractLocationDataSource.h"
+#include "DefaultLocationDataSource.h"
+#include <zmq.hpp>
+#include<iostream>
+#include "zmqreciever.h"
+#include "positionsource.h"
+#include "positionsourcesimulator.h"
 
 // Read API Keys and URLS from XML file
 
@@ -75,21 +82,35 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     layoutRightPanel->addWidget(rightPanelWidget);
     layoutRightPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerRight->setLayout(layoutRightPanel);
-
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
-    // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
+
+    //   m_mapView->locationDisplay()->stop();
+
+    ZmqReciever* zmqReciever = new ZmqReciever(this);
+
+    m_positionSourceSimulator = new PositionSourceSimulator(zmqReciever, this);
+
+    //m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
     m_mapView->locationDisplay()->start();
+    m_mapView->setZoomByPinchingEnabled(true);
+    m_mapView->setRotationByPinchingEnabled(true);
+    m_mapView->setViewpointScale(1000);
+    m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator); //Look for alternative later
+    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Recenter);
+
 
     // call the functions
     setLayersUrlVector();
     qDebug()<<m_urlVectors[0];
     addLayer(m_urlVectors[0]);
-    setupViewPoint();
+    //   setupViewPoint();
     addMarker();
+
+
 }
 
 // destructor
@@ -102,9 +123,11 @@ cockpitArcgis::~cockpitArcgis()
 /* class functions out-of-line definitions */
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
+
+
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
-    const Viewpoint view_point(center, 100000.0);
-    m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
+    const Viewpoint viewpoint(center, 100000.0);
+    m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
 }
 
 // load vector layer and add it to the map
@@ -192,3 +215,21 @@ void cockpitArcgis::setLayersUrlVector(){
 
     }
 }
+void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
+
+    double lat = newLocation[0];
+    double lon = newLocation[1];
+    Point point(lat, lon, SpatialReference::wgs84());
+    Location location(point, 10,10,10,10); //random values
+
+
+    qDebug()<<"Location changed";
+    //    const Viewpoint viewpoint(point,0 ,100000.0);
+    //    m_mapView->setViewpointCenter(point);
+    QGeoCoordinate c(lat, lon);
+    QGeoPositionInfo currentPosition;
+    currentPosition.setCoordinate(c);
+    //  emit positionUpdated(currentPosition);
+
+}
+
