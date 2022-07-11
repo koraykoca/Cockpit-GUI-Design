@@ -30,10 +30,9 @@ class MapGraphicsView;
 #include <set>
 
 #include "ui_Cockpit_arcgis.h"
-#include "Point.h"
 #include "FeatureLayer.h"
 #include "ServiceFeatureTable.h"
-
+#include "Point.h"
 
 class cockpitArcgis : public QMainWindow
 {

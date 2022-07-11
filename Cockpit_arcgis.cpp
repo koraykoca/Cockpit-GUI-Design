@@ -22,6 +22,7 @@
 
 #include "Map.h"
 #include "MapGraphicsView.h"
+#include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
 #include "CoordinateFormatter.h"
 
@@ -100,7 +101,6 @@ cockpitArcgis::~cockpitArcgis()
 }
 
 /* class functions out-of-line definitions */
-
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
@@ -152,6 +152,7 @@ void cockpitArcgis::addMarker(){
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
+
 
 // display coordinate while hovering the mouse (keep pressing) over the map
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
