@@ -17,27 +17,23 @@
 #include "Cockpit_arcgis.h"
 #include <QXmlStreamReader>
 #include <QFile>
+#include <QWindow>
+#include <QWidgetAction>
 
 #include "Map.h"
 #include "MapGraphicsView.h"
-
-#include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
-#include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
-
-
-// Read API Keys and URLS from XML file
-
 
 
 using namespace Esri::ArcGISRuntime;
 
 cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
+  , ui(new Ui::MainWindow)
 {
     // Create a map using the ArcGISTopographic BasemapStyle
-    m_map = new Map(BasemapStyle::ArcGISTopographic, this);
+    m_map = new Map(BasemapStyle::ArcGISNova, this);
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -45,11 +41,42 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Set map to map view
     m_mapView->setMap(m_map);
 
-    // set the mapView as the central widget
-    setCentralWidget(m_mapView);
+    // Make this widget as parent
+    ui->setupUi(this);
+
+    // Make the app. fullscreen
+    // this->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+
+    // Create layout for map
+    layoutMap = std::make_unique<QVBoxLayout>();
+
+    // Add map widget to the layout
+    layoutMap->addWidget(m_mapView);
+
+    // Remove margins for window borders
+    layoutMap->setContentsMargins(0, 0, 0, 0);
+
+    // Set the layout to the related frame in the GUI
+    ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
+
+    /* Integration of AirManager Panels */
+    QWindow* leftPanelContainer = QWindow::fromWinId(0x4800002);
+    QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
+    QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
+    layoutLeftPanel->addWidget(leftPanelWidget);
+    layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
+    ui->airManagerLeft->setLayout(layoutLeftPanel);
+
+    QWindow* rightPanelContainer = QWindow::fromWinId(0x4a00002);
+    QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
+    QVBoxLayout* layoutRightPanel = new QVBoxLayout();
+    layoutRightPanel->addWidget(rightPanelWidget);
+    layoutRightPanel->setContentsMargins(0, 0, 0, 0);
+    ui->airManagerRight->setLayout(layoutRightPanel);
 
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
+    connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
     // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
@@ -57,8 +84,10 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     // call the functions
     setLayersUrlVector();
-    qDebug()<<m_urlVectors[0];
-    addLayer(m_urlVectors[0]);
+    if (m_layerNames.size()){
+        createLayerMenu(m_layerNames, m_urlVectors);
+        connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
+    }
     setupViewPoint();
     addMarker();
 }
@@ -67,6 +96,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 cockpitArcgis::~cockpitArcgis()
 {
     m_mapView->locationDisplay()->stop();
+    delete ui;
 }
 
 /* class functions out-of-line definitions */
@@ -78,13 +108,28 @@ void cockpitArcgis::setupViewPoint(){
     m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
 }
 
+void cockpitArcgis::arrangeLayers(QString name){
+    if (cBoxStateCurrent == 2){  // the item is checked.
+        addLayer(QUrl(name));
+    }
+    if (cBoxStateCurrent == 0){  // the item is unchecked.
+            for(auto &i : cBoxMap){
+                if (i.second == QUrl(name)){
+                    m_map->operationalLayers()->removeOne(i.first);
+                    cBoxMap.erase(i.first);
+                    break;
+            }
+        }
+    }
+}
+
 // load vector layer and add it to the map
 void cockpitArcgis::addLayer(QUrl path){
-    std::unique_ptr<ServiceFeatureTable> ftrTable = std::make_unique<ServiceFeatureTable>(path, this);
-    std::unique_ptr<FeatureLayer> ftrLayer = std::make_unique<FeatureLayer>(ftrTable.get(), this);
-    m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
-    // m_map->operationalLayers()->clear();
-    m_map->operationalLayers()->append(ftrLayer.get());
+    ftrTable = new ServiceFeatureTable(path, this);
+    ftrLayer = new FeatureLayer(ftrTable, this);
+    //m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
+    m_map->operationalLayers()->append(ftrLayer);
+    cBoxMap.insert(std::pair<FeatureLayer*,QUrl>(ftrLayer,path));
 }
 
 // add marker to a specific coordinate
@@ -108,14 +153,45 @@ void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
+// display coordinate while hovering the mouse (keep pressing) over the map
+void cockpitArcgis::displayCoordinate(QMouseEvent& event){
+    Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
+    auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
+    ui->textCoordinate->setText(mapCoordinates);
+}
+
 // get coordinate of click
 void cockpitArcgis::getCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
     mapPoint = CoordinateFormatter::fromLatitudeLongitude(mapCoordinates, SpatialReference::wgs84());
+    ui->textSelectedCoordinate->setText(mapCoordinates);
     updateMarker(std::move(mapPoint));
 }
 
+// construct layer menu
+void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QString>& url){
+    ui->layersToolButton->setPopupMode(QToolButton::InstantPopup);
+    layerMenu = new QMenu();
+    signalMapper = new QSignalMapper(this);
+    for(unsigned long i=0 ; i<name.size(); i++){
+        m_cBoxVectors.push_back(new QCheckBox(name[i]));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getCBoxState(int)));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), signalMapper, SLOT(map()));
+        signalMapper->setMapping(m_cBoxVectors[i], url[i]);
+        auto action = new QWidgetAction(m_cBoxVectors[i]);
+        action->setDefaultWidget(m_cBoxVectors[i]);
+        actionList.append(action);
+    }
+    layerMenu->addActions(actionList);
+    ui->layersToolButton->setMenu(layerMenu);
+}
+
+void cockpitArcgis::getCBoxState(int state){
+    cBoxStateCurrent = state;
+}
+
+// read layer data from XML file
 void cockpitArcgis::setLayersUrlVector(){
 
     QFile xmlFile(":/guiParamFile.xml");
@@ -133,25 +209,25 @@ void cockpitArcgis::setLayersUrlVector(){
 
             while(xmlReader.readNextStartElement()) {
                 if (xmlReader.name() == "data"){
-                    while(xmlReader.readNextStartElement()){
 
-                        if(xmlReader.name()== "dataUrl"){
-                            QUrl u(xmlReader.readElementText());
+                    while(xmlReader.readNextStartElement()){
+                        if(xmlReader.name()== "url"){
+                            QString u(xmlReader.readElementText());
                             m_urlVectors.push_back(u);
                         }
-                        break;
+                        if(xmlReader.name()== "name"){
+                            QString n(xmlReader.readElementText());
+                            m_layerNames.push_back(n);
+                        }
                     }
-
-
-
                 }
                 else {
                     xmlReader.skipCurrentElement();
                 }
             }
-
         }
-
-
     }
 }
+
+
+
