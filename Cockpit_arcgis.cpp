@@ -18,15 +18,14 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <QWindow>
+#include <QWidgetAction>
 
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
-#include "ServiceFeatureTable.h"
 #include "CoordinateFormatter.h"
 
-// Read API Keys and URLS from XML file
 
 using namespace Esri::ArcGISRuntime;
 
@@ -86,8 +85,10 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     // call the functions
     setLayersUrlVector();
-    qDebug()<<m_urlVectors[0];
-    addLayer(m_urlVectors[0]);
+    if (m_layerNames.size()){
+        createLayerMenu(m_layerNames, m_urlVectors);
+        connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
+    }
     setupViewPoint();
     addMarker();
 }
@@ -107,13 +108,28 @@ void cockpitArcgis::setupViewPoint(){
     m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
 }
 
+void cockpitArcgis::arrangeLayers(QString name){
+    if (cBoxStateCurrent == 2){  // the item is checked.
+        addLayer(QUrl(name));
+    }
+    if (cBoxStateCurrent == 0){  // the item is unchecked.
+            for(auto &i : cBoxMap){
+                if (i.second == QUrl(name)){
+                    m_map->operationalLayers()->removeOne(i.first);
+                    cBoxMap.erase(i.first);
+                    break;
+            }
+        }
+    }
+}
+
 // load vector layer and add it to the map
 void cockpitArcgis::addLayer(QUrl path){
-    std::unique_ptr<ServiceFeatureTable> ftrTable = std::make_unique<ServiceFeatureTable>(path, this);
-    std::unique_ptr<FeatureLayer> ftrLayer = std::make_unique<FeatureLayer>(ftrTable.get(), this);
-    m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
-    // m_map->operationalLayers()->clear();
-    m_map->operationalLayers()->append(ftrLayer.get());
+    ftrTable = new ServiceFeatureTable(path, this);
+    ftrLayer = new FeatureLayer(ftrTable, this);
+    //m_mapView->setViewpointCenter(ftrLayer->fullExtent().center(), 80000);
+    m_map->operationalLayers()->append(ftrLayer);
+    cBoxMap.insert(std::pair<FeatureLayer*,QUrl>(ftrLayer,path));
 }
 
 // add marker to a specific coordinate
@@ -137,7 +153,8 @@ void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
-// display coordinate while hovering the mouse over the map
+
+// display coordinate while hovering the mouse (keep pressing) over the map
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
     auto mapCoordinates = CoordinateFormatter::toLatitudeLongitude(mapPoint, LatitudeLongitudeFormat::DecimalDegrees, 4);
@@ -153,6 +170,29 @@ void cockpitArcgis::getCoordinate(QMouseEvent& event){
     updateMarker(std::move(mapPoint));
 }
 
+// construct layer menu
+void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QString>& url){
+    ui->layersToolButton->setPopupMode(QToolButton::InstantPopup);
+    layerMenu = new QMenu();
+    signalMapper = new QSignalMapper(this);
+    for(unsigned long i=0 ; i<name.size(); i++){
+        m_cBoxVectors.push_back(new QCheckBox(name[i]));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getCBoxState(int)));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), signalMapper, SLOT(map()));
+        signalMapper->setMapping(m_cBoxVectors[i], url[i]);
+        auto action = new QWidgetAction(m_cBoxVectors[i]);
+        action->setDefaultWidget(m_cBoxVectors[i]);
+        actionList.append(action);
+    }
+    layerMenu->addActions(actionList);
+    ui->layersToolButton->setMenu(layerMenu);
+}
+
+void cockpitArcgis::getCBoxState(int state){
+    cBoxStateCurrent = state;
+}
+
+// read layer data from XML file
 void cockpitArcgis::setLayersUrlVector(){
 
     QFile xmlFile(":/guiParamFile.xml");
@@ -170,25 +210,25 @@ void cockpitArcgis::setLayersUrlVector(){
 
             while(xmlReader.readNextStartElement()) {
                 if (xmlReader.name() == "data"){
-                    while(xmlReader.readNextStartElement()){
 
-                        if(xmlReader.name()== "dataUrl"){
-                            QUrl u(xmlReader.readElementText());
+                    while(xmlReader.readNextStartElement()){
+                        if(xmlReader.name()== "url"){
+                            QString u(xmlReader.readElementText());
                             m_urlVectors.push_back(u);
                         }
-                        break;
+                        if(xmlReader.name()== "name"){
+                            QString n(xmlReader.readElementText());
+                            m_layerNames.push_back(n);
+                        }
                     }
-
-
-
                 }
                 else {
                     xmlReader.skipCurrentElement();
                 }
             }
-
         }
-
-
     }
 }
+
+
+

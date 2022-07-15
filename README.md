@@ -25,6 +25,10 @@
 
 * Go to Layers section and click on __*Import Data*__, select the zip file from the repo. Then copy the Url of a layer and  replace it with the value of __*data_url*__ key in param/gui_param_file.yaml file.
 
+* Meanings of the layer data can be found here:
+https://tlbg.thueringen.de/fileadmin/TLBG/Vertrieb/testdaten/dlm/4-4_03_basis-dlm-aaa.pdf
+(from page 8)
+
 ## Contributions
 
 * Before a contribution or adding a new feature, a corresponding issue should be created first. This issue should clarify what the contribution will be about.

@@ -2,7 +2,51 @@
 
 <apiKey>AAPKb459925502a64d2f92d1a4b071d2b858-rOdEVQNuvsTY-TowB-oBv5mjetMhW4PNoDTGneqDkQKz9R2ondOJWJLunRrkefB</apiKey>
     <data>
-        <dataUrl>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/27</dataUrl>
-        <dataUrl>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/23</dataUrl>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/2</url>
+        <name>Bauwerke und sonstige Einrichtungen</name>
+    </data>  
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/4</url>
+        <name>Verkehrsbauwerke und -anlagen</name>
     </data>
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/6</url>
+        <name>Gewässerachse</name>
+    </data>
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/8</url>
+        <name>Bahnverkehr</name>
+    </data>      
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/9</url>
+        <name>Wege</name>
+    </data>     
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/10</url>
+        <name>Bauwerke und sonstige Einrichtungen</name>
+    </data>                    
+    <data>
+    	<url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/12</url>
+    	<name>Straßenverkehr</name>
+    </data>
+    <data>
+    	<url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/20</url>
+    	<name>Forstwirtschaftliche Nutzfläche</name>
+    </data>     
+    <data>
+    	<url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/23</url>
+    	<name>Baulich geprägte Flächen</name>
+    </data>
+    <data>
+    	<url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/24</url>
+    	<name>Ortslage</name>
+    </data>    
+    <data>
+        <url>https://services8.arcgis.com/DDIwPm5SH1jFw0T5/arcgis/rest/services/ldbv_bayern/FeatureServer/27</url>
+        <name>Verwaltungsgebiete</name>
+    </data>
+    
 </dataParameters>
+
+
+

@@ -23,9 +23,15 @@ class MapGraphicsView;
 }
 
 #include <QMainWindow>
-#include "ui_Cockpit_arcgis.h"
 #include <QVBoxLayout>
+#include <QMenu>
+#include <QCheckBox>
+#include <QSignalMapper>
+#include <set>
 
+#include "ui_Cockpit_arcgis.h"
+#include "FeatureLayer.h"
+#include "ServiceFeatureTable.h"
 #include "Point.h"
 
 class cockpitArcgis : public QMainWindow
@@ -38,21 +44,32 @@ public:
 public slots:
     void getCoordinate(QMouseEvent&);
     void displayCoordinate(QMouseEvent&);
+    void addLayer(QUrl);
+    void arrangeLayers(QString);
+    void getCBoxState(int);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
     Ui::MainWindow*                             ui;
     std::unique_ptr<QVBoxLayout>                layoutMap;
+    QMenu*                                      layerMenu;
+    QList<QAction*>                             actionList;
+    QSignalMapper*                              signalMapper;
+    Esri::ArcGISRuntime::ServiceFeatureTable*   ftrTable;
+    Esri::ArcGISRuntime::FeatureLayer*          ftrLayer;
 
-
-    std::vector<QUrl> m_urlVectors;
+    std::vector<QString> m_urlVectors;
+    std::vector<QString> m_layerNames;
+    std::vector<QCheckBox*> m_cBoxVectors;
+    std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl> cBoxMap;
+    int cBoxStateCurrent;
 
     void setupViewPoint();
-    void addLayer(QUrl);
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
     void setLayersUrlVector();
+    void createLayerMenu(std::vector<QString> &, std::vector<QString> &);
 };
 
 #endif // COCKPIT_ARCGIS_H
