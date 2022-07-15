@@ -21,6 +21,7 @@ class Map;
 class MapGraphicsView;
 class Point;
 class SimulatedLocationDataSource;
+class DefaultLocationDataSource;
 }
 }
 
@@ -47,11 +48,14 @@ public slots:
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
+    Esri::ArcGISRuntime::DefaultLocationDataSource* m_d = nullptr;
     Ui::MainWindow*                             ui;
     std::unique_ptr<QVBoxLayout>                layoutMap;
     PositionSourceSimulator* m_positionSourceSimulator = nullptr;
 
     std::vector<QUrl> m_urlVectors;
+    QString m_leftPaneId;
+    QString m_rightPaneId;
 
 
     void setupViewPoint();
@@ -60,6 +64,7 @@ private:
     void updateMarker(Esri::ArcGISRuntime::Point);
     void setLayersUrlVector();
     void readGpsFromXplane();
+    void setWindowsIds();
 };
 
 #endif // COCKPIT_ARCGIS_H
