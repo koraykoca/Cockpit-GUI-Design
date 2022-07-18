@@ -19,6 +19,9 @@ namespace ArcGISRuntime
 {
 class Map;
 class MapGraphicsView;
+class Point;
+class SimulatedLocationDataSource;
+class DefaultLocationDataSource;
 }
 }
 
@@ -33,6 +36,7 @@ class MapGraphicsView;
 #include "FeatureLayer.h"
 #include "ServiceFeatureTable.h"
 #include "Point.h"
+#include "positionsourcesimulator.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -47,10 +51,12 @@ public slots:
     void addLayer(QUrl);
     void arrangeLayers(QString);
     void getCBoxState(int);
+    void planeGpsPositionChanged(QVector<  double> newPosition);
 
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
+    Esri::ArcGISRuntime::DefaultLocationDataSource* m_d = nullptr;
     Ui::MainWindow*                             ui;
     std::unique_ptr<QVBoxLayout>                layoutMap;
     QMenu*                                      layerMenu;
@@ -58,18 +64,23 @@ private:
     QSignalMapper*                              signalMapper;
     Esri::ArcGISRuntime::ServiceFeatureTable*   ftrTable;
     Esri::ArcGISRuntime::FeatureLayer*          ftrLayer;
+    PositionSourceSimulator* m_positionSourceSimulator = nullptr;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
     std::vector<QCheckBox*> m_cBoxVectors;
     std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl> cBoxMap;
     int cBoxStateCurrent;
+    QString m_leftPaneId;
+    QString m_rightPaneId;
 
     void setupViewPoint();
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
     void setLayersUrlVector();
     void createLayerMenu(std::vector<QString> &, std::vector<QString> &);
+    void readGpsFromXplane();
+    void setWindowsIds();
 };
 
 #endif // COCKPIT_ARCGIS_H

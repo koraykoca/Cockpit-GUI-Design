@@ -19,12 +19,23 @@
 #include <QFile>
 #include <QWindow>
 #include <QWidgetAction>
+#include <QGeoPositionInfo>
 
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "FeatureLayer.h"
 #include "PictureMarkerSymbol.h"
 #include "CoordinateFormatter.h"
+#include "AbstractLocationDataSource.h"
+#include "DefaultLocationDataSource.h"
+
+#include <zmq.hpp>
+#include<iostream>
+#include <cstdlib>
+
+#include "zmqreciever.h"
+#include "positionsource.h"
+#include "positionsourcesimulator.h"
 
 
 using namespace Esri::ArcGISRuntime;
@@ -44,7 +55,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     // Make this widget as parent
     ui->setupUi(this);
-
+    ui->centralwidget->setStyleSheet("QWidget { background-color: gray; }");
     // Make the app. fullscreen
     // this->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
 
@@ -60,28 +71,55 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Set the layout to the related frame in the GUI
     ui->mapFrame->setLayout(layoutMap.release());  // relinquish ownership to avoid double delete
 
+    setWindowsIds();
     /* Integration of AirManager Panels */
-    QWindow* leftPanelContainer = QWindow::fromWinId(0x4800002);
+
+    // check if the ids get converted
+    bool leftOk;
+    bool rightOk;
+
+    long left = m_leftPaneId.toLong(&leftOk, 16);
+    long right = m_rightPaneId.toLong(&rightOk,16);
+
+    QWindow* leftPanelContainer = QWindow::fromWinId(left);
     QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
     QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
     layoutLeftPanel->addWidget(leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
 
-    QWindow* rightPanelContainer = QWindow::fromWinId(0x4a00002);
+    QWindow* rightPanelContainer = QWindow::fromWinId(right);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
     QVBoxLayout* layoutRightPanel = new QVBoxLayout();
     layoutRightPanel->addWidget(rightPanelWidget);
     layoutRightPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerRight->setLayout(layoutRightPanel);
-
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
-    // m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
+
+    //   m_mapView->locationDisplay()->stop();
+
+    ZmqReciever* zmqReciever = new ZmqReciever(this);
+
+    m_positionSourceSimulator = new PositionSourceSimulator(zmqReciever, this);
+
+    //m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
     m_mapView->locationDisplay()->start();
+    m_mapView->locationDisplay()->setInitialZoomScale(100000);
+    m_mapView->setZoomByPinchingEnabled(true);
+    m_mapView->setRotationByPinchingEnabled(true);
+  //  m_mapView->setViewpointScale(100);
+   // m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator); //Look for alternative later
+
+    m_d = new DefaultLocationDataSource(this);
+    m_d->setPositionInfoSource(m_positionSourceSimulator);
+    m_d->start();
+    m_mapView->locationDisplay()->setDataSource(m_d);
+    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::CompassNavigation);
+
 
     // call the functions
     setLayersUrlVector();
@@ -89,7 +127,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
         createLayerMenu(m_layerNames, m_urlVectors);
         connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
     }
-    setupViewPoint();
+    // setupViewPoint();
     addMarker();
 }
 
@@ -103,9 +141,11 @@ cockpitArcgis::~cockpitArcgis()
 /* class functions out-of-line definitions */
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
+
+
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
-    const Viewpoint view_point(center, 100000.0);
-    m_mapView->setViewpointAnimated(view_point, 1.5, AnimationCurve::EaseInQuint);
+    const Viewpoint viewpoint(center, 100000.0);
+    m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
 }
 
 void cockpitArcgis::arrangeLayers(QString name){
@@ -230,5 +270,43 @@ void cockpitArcgis::setLayersUrlVector(){
     }
 }
 
+void cockpitArcgis::setWindowsIds()
+{
+    QFile xmlFile(":/windowsId.xml");
 
+    if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
+        qDebug() << "Cannot read file" << xmlFile.errorString();
+        exit(0);
+    }
 
+    QXmlStreamReader xmlReader(&xmlFile);
+
+    if (xmlReader.readNextStartElement()){
+        while(xmlReader.readNextStartElement()){
+            if (xmlReader.name() =="leftpane") {
+                m_leftPaneId = xmlReader.readElementText();
+            }
+
+            else if (xmlReader.name() =="rightpane") {
+                m_rightPaneId = xmlReader.readElementText();
+            }
+        }
+    }
+}
+
+void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
+
+    double lat = newLocation[0];
+    double lon = newLocation[1];
+    Point point(lat, lon, SpatialReference::wgs84());
+    Location location(point, 10,10,10,10); //random values
+
+    qDebug()<<"Location changed";
+    //    const Viewpoint viewpoint(point,0 ,100000.0);
+    //    m_mapView->setViewpointCenter(point);
+    QGeoCoordinate c(lat, lon);
+    QGeoPositionInfo currentPosition;
+    currentPosition.setCoordinate(c);
+    //  emit positionUpdated(currentPosition);
+
+}

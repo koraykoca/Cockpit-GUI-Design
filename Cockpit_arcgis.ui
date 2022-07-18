@@ -20,6 +20,9 @@
    </size>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
    <widget class="QFrame" name="mapFrame">
     <property name="geometry">
      <rect>
