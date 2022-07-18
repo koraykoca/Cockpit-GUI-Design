@@ -34,7 +34,6 @@
 #include <cstdlib>
 
 #include "zmqreciever.h"
-#include "positionsource.h"
 #include "positionsourcesimulator.h"
 
 
