@@ -35,9 +35,9 @@ https://tlbg.thueringen.de/fileadmin/TLBG/Vertrieb/testdaten/dlm/4-4_03_basis-dl
 
 Afterwards, go to your other cloned folder cockpit-helper and run the following command:
 
-`conda env update -n simauto --file environment.yaml \
-&& sudo apt-get install libzmq3-dev wmctrl scrot gawk \
-&& pip install guibot pyautogui opencv-python \
+`conda env update -n simauto --file environment.yaml
+&& sudo apt-get install libzmq3-dev wmctrl scrot gawk
+&& pip install guibot pyautogui opencv-python
 && chmod +x dumpxml.sh getwinidbyname.sh`
 
 * Install XPalneConnect.zip file:
