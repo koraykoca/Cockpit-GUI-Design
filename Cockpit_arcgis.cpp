@@ -24,7 +24,6 @@
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "FeatureLayer.h"
-#include "PictureMarkerSymbol.h"
 #include "CoordinateFormatter.h"
 #include "AbstractLocationDataSource.h"
 #include "DefaultLocationDataSource.h"
@@ -99,26 +98,22 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
-
-    //   m_mapView->locationDisplay()->stop();
-
     ZmqReciever* zmqReciever = new ZmqReciever(this);
-
     m_positionSourceSimulator = new PositionSourceSimulator(zmqReciever, this);
+    connect(zmqReciever, &ZmqReciever::gpsPositionChanged, this, &cockpitArcgis::updatesFromZmq);
 
-    //m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
     m_mapView->locationDisplay()->start();
     m_mapView->locationDisplay()->setInitialZoomScale(100000);
     m_mapView->setZoomByPinchingEnabled(true);
     m_mapView->setRotationByPinchingEnabled(true);
-  //  m_mapView->setViewpointScale(100);
-   // m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator); //Look for alternative later
+    // m_mapView->setViewpointScale(100);
+    // m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator);  //ToDo: Look for alternative later
 
     m_d = new DefaultLocationDataSource(this);
     m_d->setPositionInfoSource(m_positionSourceSimulator);
     m_d->start();
-    QImage planeIcon{":/planeIcon.png"};  // get image from resources
-    std::unique_ptr<PictureMarkerSymbol> planeMarker = std::make_unique<PictureMarkerSymbol>(planeIcon, this);
+    planeIcon = new QImage(":/planeIcon.png");
+    planeMarker = std::make_unique<PictureMarkerSymbol>(*planeIcon, this);
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     m_mapView->locationDisplay()->setDataSource(m_d);
     m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
@@ -195,7 +190,6 @@ void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
 
-
 // display coordinate while hovering the mouse (keep pressing) over the map
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
     Point mapPoint = m_mapView->screenToLocation(event.x(), event.y());
@@ -232,6 +226,14 @@ void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QStr
 
 void cockpitArcgis::getCBoxState(int state){
     cBoxStateCurrent = state;
+}
+
+void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
+    altitude = newAttributes[2];  // m above MSL
+    heading = newAttributes[5];   // deg
+    QImage transformed_planeIcon = planeIcon->transformed(QTransform().rotate(heading), Qt::SmoothTransformation);
+    planeMarker = std::make_unique<PictureMarkerSymbol>(transformed_planeIcon, this);
+    m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
 }
 
 // read layer data from XML file
@@ -312,3 +314,4 @@ void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
     //  emit positionUpdated(currentPosition);
 
 }
+
