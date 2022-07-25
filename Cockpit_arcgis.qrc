@@ -3,5 +3,6 @@
         <file>mapMarker.png</file>
         <file>guiParamFile.xml</file>
         <file>windowsId.xml</file>
+        <file>planeIcon.png</file>
     </qresource>
 </RCC>

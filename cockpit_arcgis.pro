@@ -54,7 +54,5 @@ LIBS += -L/usr/lib -lzmq
 RESOURCES += \
     Cockpit_arcgis.qrc
 
-DISTFILES +=
-
 FORMS += \
     Cockpit_arcgis.ui

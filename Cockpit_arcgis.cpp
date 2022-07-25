@@ -28,6 +28,7 @@
 #include "CoordinateFormatter.h"
 #include "AbstractLocationDataSource.h"
 #include "DefaultLocationDataSource.h"
+#include <SimpleMarkerSymbol.h>
 
 #include <zmq.hpp>
 #include<iostream>
@@ -116,9 +117,11 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_d = new DefaultLocationDataSource(this);
     m_d->setPositionInfoSource(m_positionSourceSimulator);
     m_d->start();
+    QImage planeIcon{":/planeIcon.png"};  // get image from resources
+    std::unique_ptr<PictureMarkerSymbol> planeMarker = std::make_unique<PictureMarkerSymbol>(planeIcon, this);
+    m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     m_mapView->locationDisplay()->setDataSource(m_d);
-    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::CompassNavigation);
-
+    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
 
     // call the functions
     setLayersUrlVector();
