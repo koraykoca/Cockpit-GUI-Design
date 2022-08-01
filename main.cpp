@@ -110,6 +110,9 @@ int main(int argc, char *argv[])
     applicationWindow.setMinimumHeight(600);
     applicationWindow.show();
 
+//    CoordinateGrabber c;
+
+
 
 
     return application.exec();

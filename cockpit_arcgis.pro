@@ -36,6 +36,7 @@ win32:CONFIG += \
     embed_manifest_exe
 
 SOURCES += \
+    circle.cpp \
     coordinategrabber.cpp \
     main.cpp \
     Cockpit_arcgis.cpp \
@@ -45,6 +46,7 @@ SOURCES += \
 
 HEADERS += \
     Cockpit_arcgis.h \
+    circle.h \
     coordinategrabber.h \
     overlay.h \
     positionsourcesimulator.h \

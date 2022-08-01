@@ -51,7 +51,7 @@ void CoordinateGrabber::setInstrumentCoordinatesFromImage(){
         auto duration = duration_cast<milliseconds>(stop - start);
         std::cout << "Duration in miliseconds " <<duration.count() << std::endl;
 
-        showImageInDialogUtility(imgDisplay);
+//        showImageInDialogUtility(imgDisplay);
 
 
     }

@@ -4,11 +4,11 @@
 #include <QWidget>
 #include <QtGui>
 
-class overlay : public QWidget
+class Overlay : public QWidget
 {
     Q_OBJECT
 public:
-    explicit overlay(QWidget *parent = nullptr);
+    explicit Overlay(QWidget *parent = nullptr);
 
 protected:
     void paintEvent(QPaintEvent* e) override;

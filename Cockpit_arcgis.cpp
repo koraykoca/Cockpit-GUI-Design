@@ -36,6 +36,7 @@
 #include "zmqreciever.h"
 #include "positionsourcesimulator.h"
 #include "overlay.h"
+#include "circle.h"
 
 
 using namespace Esri::ArcGISRuntime;
@@ -129,6 +130,13 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     }
     // setupViewPoint();
     addMarker();
+
+    Circle* c = new Circle();
+    c->setParent(ui->centralwidget);
+    c->move(800,400);
+    c->show();
+
+
 //    overlay* m_overlay = new overlay(this);
 //    m_overlay->setParent(ui->centralwidget);
 //    m_overlay->resize(ui->menuFrame->size());
