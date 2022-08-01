@@ -35,6 +35,7 @@
 
 #include "zmqreciever.h"
 #include "positionsourcesimulator.h"
+#include "overlay.h"
 
 
 using namespace Esri::ArcGISRuntime;
@@ -128,6 +129,14 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     }
     // setupViewPoint();
     addMarker();
+//    overlay* m_overlay = new overlay(this);
+//    m_overlay->setParent(ui->centralwidget);
+//    m_overlay->resize(ui->menuFrame->size());
+//    m_overlay->move(50,50);
+//    m_overlay->show();
+
+
+
 }
 
 // destructor
@@ -291,6 +300,7 @@ void cockpitArcgis::setWindowsIds()
             }
         }
     }
+
 }
 
 void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
@@ -309,3 +319,5 @@ void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
     //  emit positionUpdated(currentPosition);
 
 }
+
+
