@@ -22,7 +22,7 @@ void CoordinateGrabber::setInstrumentCoordinatesFromImage(){
 
 
     for (auto const& [name, image] : m_compareImagesNameFileMap){
-        auto start = high_resolution_clock::now();
+
 
         cv::Mat result, imgDisplay, templateImage;
         image.copyTo(templateImage);
@@ -33,23 +33,28 @@ void CoordinateGrabber::setInstrumentCoordinatesFromImage(){
         int result_rows = imgDisplay.rows - templateImage.rows + 1;
         result.create( result_rows, result_cols, CV_32FC1 );
 
+        auto start = high_resolution_clock::now();
 
-        cv::matchTemplate(imgDisplay,templateImage, result, cv::TM_CCORR_NORMED );
+        cv::matchTemplate(imgDisplay,templateImage, result, cv::TM_SQDIFF );
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+
         cv::normalize(result, result, 0,1, cv::NORM_MINMAX, -1, cv::Mat());
+
+        std::cout << "Duration in miliseconds " <<duration.count() << std::endl;
         double minVal, maxVal;
         cv::Point minLoc, maxLoc, matchLoc;
         cv::minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
 
-        matchLoc = maxLoc; // This is different based on matching algorithm used, refer to the docs for more information
+        matchLoc = minLoc; // This is different based on matching algorithm used, refer to the docs for more information https://docs.opencv.org/3.4/de/da9/tutorial_template_matching.html
         cv::Point oppositeEnd = cv::Point( matchLoc.x + templateImage.cols , matchLoc.y + templateImage.rows );
         rectangle( imgDisplay, matchLoc, oppositeEnd, cv::Scalar::all(255), 2, 8, 0 );
         std::vector<int> coordinates = {matchLoc.x, matchLoc.y, oppositeEnd.x, oppositeEnd.y };
 
         m_instrumentNamesAndCoordinates.insert({name,coordinates});
 
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<milliseconds>(stop - start);
-        std::cout << "Duration in miliseconds " <<duration.count() << std::endl;
+
+
 
 //        showImageInDialogUtility(imgDisplay);
 
@@ -94,7 +99,7 @@ void CoordinateGrabber::setImageToCompareWith()
 
 void CoordinateGrabber::showImageInDialogUtility(cv::Mat img)
 {
-            QImage imdisplay((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_RGB888);
+            QImage imdisplay((uchar*)img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8);
             QDialog dlg;
             QHBoxLayout *l = new QHBoxLayout(&dlg);
             QLabel *label = new QLabel();
@@ -113,15 +118,16 @@ const std::map<QString, std::vector<int> > &CoordinateGrabber::instrumentNamesAn
 cv::Mat CoordinateGrabber::loadFromQrc(QString qrc, int flag)
 {
     QFile file(qrc);
-    cv::Mat brgImage,rgbImage;
+    cv::Mat brgImage,grayImage;
     if(file.open(QIODevice::ReadOnly))
     {
         qint64 sz = file.size();
         std::vector<uchar> buf(sz);
         file.read((char*)buf.data(), sz);
         brgImage = cv::imdecode(buf, flag);
-        cv::cvtColor(brgImage,rgbImage, cv::COLOR_BGR2RGB);
+        cv::cvtColor(brgImage,grayImage, cv::COLOR_BGR2GRAY);
+        cv::normalize(grayImage, grayImage, 0., 255., cv::NORM_MINMAX, CV_8U);
     }
-    return rgbImage;
+    return grayImage;
 
 }
