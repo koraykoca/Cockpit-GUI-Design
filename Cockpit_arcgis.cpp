@@ -238,6 +238,10 @@ void cockpitArcgis::popupInformation(){
     m_mapView->graphicsOverlays()->append(graphicOverlay2);
 }
 
+void cockpitArcgis::drawLocationTrail(Point currentLocation, int numberOfLocation){
+
+}
+
 void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     latitude = newAttributes[0];           // deg
     longitude = newAttributes[1];          // deg
@@ -249,6 +253,8 @@ void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     // m_mapView->setViewpointRotation(heading);  // rotate the map itself
     Point loc{latitude, longitude};
     m_mapView->graphicsOverlays()->at(1)->graphics()->at(0)->setGeometry(loc);
+    // draw past 5 location
+    drawLocationTrail(loc, 5);
 }
 
 // read layer data from XML file

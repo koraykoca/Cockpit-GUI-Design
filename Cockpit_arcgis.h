@@ -91,6 +91,7 @@ private:
     void readGpsFromXplane();
     void setWindowsIds();
     void popupInformation();
+    void drawLocationTrail(Esri::ArcGISRuntime::Point, int);
 };
 
 #endif // COCKPIT_ARCGIS_H
