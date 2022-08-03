@@ -68,9 +68,11 @@ void PositionSourceSimulator::updateFromZmq(QVector<  double> newLocation){
 
     double lat = newLocation[0];
     double lon = newLocation[1];
+    // double heading = newLocation[5];
     Point point(lat, lon, SpatialReference::wgs84());
     Location location(point, 10,10,10,10); //random values
     m_currentPosition.setCoordinate(QGeoCoordinate(lat,lon));
+    // m_currentPosition.setAttribute(QGeoPositionInfo::Direction, heading);
     emit positionUpdated(m_currentPosition);
     qDebug() << "called this here form Position source";
 

@@ -116,7 +116,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     planeMarker = std::make_unique<PictureMarkerSymbol>(*planeIcon, this);
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     m_mapView->locationDisplay()->setDataSource(m_d);
-    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
+    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Recenter);
 
     // call the functions
     setLayersUrlVector();
@@ -126,6 +126,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     }
     // setupViewPoint();
     addMarker();
+    popupInformation();
 }
 
 // destructor
@@ -138,8 +139,6 @@ cockpitArcgis::~cockpitArcgis()
 /* class functions out-of-line definitions */
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
-
-
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
     const Viewpoint viewpoint(center, 100000.0);
     m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
@@ -169,7 +168,7 @@ void cockpitArcgis::addLayer(QUrl path){
     cBoxMap.insert(std::pair<FeatureLayer*,QUrl>(ftrLayer,path));
 }
 
-// add marker to a specific coordinate
+// add marker to the map
 void cockpitArcgis::addMarker(){
     Point startPoint;
     QVariantMap attr;
@@ -177,7 +176,7 @@ void cockpitArcgis::addMarker(){
 
     QImage icon{":/mapMarker.png"};  // get image from resources
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
-    marker->setOffsetY(12);
+    marker->setOffsetY(12);  // put the tip of the marker on where clicked
 
     std::unique_ptr<Graphic> graphicElement = std::make_unique<Graphic>(startPoint, attr, marker.get(), this);
     std::unique_ptr<GraphicsOverlay> graphicOverlay = std::make_unique<GraphicsOverlay>(this);
@@ -185,7 +184,7 @@ void cockpitArcgis::addMarker(){
     m_mapView->graphicsOverlays()->append(graphicOverlay.get());
 }
 
-// refresh marker position
+// move the marker to a new position
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
 }
@@ -228,12 +227,28 @@ void cockpitArcgis::getCBoxState(int state){
     cBoxStateCurrent = state;
 }
 
+// add popup information next to the plane
+void cockpitArcgis::popupInformation(){
+    Point initPoint{47.4315, -122.308, SpatialReference::wgs84()};
+    TextSymbol* textSymbol = new TextSymbol("TESSSTT", QColor(Qt::darkBlue), 24.0, HorizontalAlignment::Right, VerticalAlignment::Middle, this);
+    textSymbol->setBackgroundColor(QColor(Qt::darkYellow));
+    Graphic* textGraphic = new Graphic(initPoint, textSymbol, this);
+    GraphicsOverlay* graphicOverlay2 = new GraphicsOverlay(this);
+    graphicOverlay2->graphics()->append(textGraphic);
+    m_mapView->graphicsOverlays()->append(graphicOverlay2);
+}
+
 void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
-    altitude = newAttributes[2];  // m above MSL
-    heading = newAttributes[5];   // deg
+    latitude = newAttributes[0];           // deg
+    longitude = newAttributes[1];          // deg
+    altitude = newAttributes[2];           // m above MSL
+    heading = newAttributes[5];            // deg
     QImage transformed_planeIcon = planeIcon->transformed(QTransform().rotate(heading), Qt::SmoothTransformation);
     planeMarker = std::make_unique<PictureMarkerSymbol>(transformed_planeIcon, this);
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
+    // m_mapView->setViewpointRotation(heading);  // rotate the map itself
+    Point loc{latitude, longitude};
+    m_mapView->graphicsOverlays()->at(1)->graphics()->at(0)->setGeometry(loc);
 }
 
 // read layer data from XML file

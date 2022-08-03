@@ -80,6 +80,8 @@ private:
     QString m_rightPaneId;
     double altitude;
     double heading;
+    double latitude;
+    double longitude;
 
     void setupViewPoint();
     void addMarker();
@@ -88,6 +90,7 @@ private:
     void createLayerMenu(std::vector<QString> &, std::vector<QString> &);
     void readGpsFromXplane();
     void setWindowsIds();
+    void popupInformation();
 };
 
 #endif // COCKPIT_ARCGIS_H
