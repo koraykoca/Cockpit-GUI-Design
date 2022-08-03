@@ -70,10 +70,12 @@ private:
     std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl>          cBoxMap;
     std::unique_ptr<Esri::ArcGISRuntime::PictureMarkerSymbol>   planeMarker;
     QImage*                                                     planeIcon;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationGraphicOverlay;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
     std::vector<QCheckBox*> m_cBoxVectors;
+    std::vector<Esri::ArcGISRuntime::Point> locations;
 
     int cBoxStateCurrent;
     QString m_leftPaneId;
@@ -91,7 +93,7 @@ private:
     void readGpsFromXplane();
     void setWindowsIds();
     void popupInformation();
-    void drawLocationTrail(Esri::ArcGISRuntime::Point, int);
+    void drawLocationTrail(Esri::ArcGISRuntime::Point);
 };
 
 #endif // COCKPIT_ARCGIS_H

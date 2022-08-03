@@ -4,5 +4,6 @@
         <file>guiParamFile.xml</file>
         <file>windowsId.xml</file>
         <file>planeIcon.png</file>
+        <file>lineIcon.png</file>
     </qresource>
 </RCC>

@@ -127,6 +127,9 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // setupViewPoint();
     addMarker();
     popupInformation();
+
+    locationGraphicOverlay = std::make_unique<GraphicsOverlay>(this);
+    m_mapView->graphicsOverlays()->append(locationGraphicOverlay.get());
 }
 
 // destructor
@@ -187,6 +190,7 @@ void cockpitArcgis::addMarker(){
 // move the marker to a new position
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
+    qDebug() << newPoint.x() << newPoint.y();
 }
 
 // display coordinate while hovering the mouse (keep pressing) over the map
@@ -238,8 +242,11 @@ void cockpitArcgis::popupInformation(){
     m_mapView->graphicsOverlays()->append(graphicOverlay2);
 }
 
-void cockpitArcgis::drawLocationTrail(Point currentLocation, int numberOfLocation){
-
+void cockpitArcgis::drawLocationTrail(Point currentLocation){
+    QImage lineIcon{":/lineIcon.png"};
+    PictureMarkerSymbol* lineMarker = new PictureMarkerSymbol(lineIcon, this);
+    Graphic* graphicElement = new Graphic(currentLocation, lineMarker, this);
+    locationGraphicOverlay->graphics()->append(graphicElement);
 }
 
 void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
@@ -253,8 +260,7 @@ void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     // m_mapView->setViewpointRotation(heading);  // rotate the map itself
     Point loc{latitude, longitude};
     m_mapView->graphicsOverlays()->at(1)->graphics()->at(0)->setGeometry(loc);
-    // draw past 5 location
-    drawLocationTrail(loc, 5);
+    drawLocationTrail(loc);
 }
 
 // read layer data from XML file
