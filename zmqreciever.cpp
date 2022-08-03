@@ -16,7 +16,7 @@ void ZmqReciever::start(){
 }
 
 void ZmqReciever::execute (){
-    std::string connectString ("tcp://127.0.0.1:5555");
+    std::string connectString ("tcp://137.193.83.173:5555");  // set it to the IP adress of the machine which sends the data, default: 127.0.0.1
     zmq::context_t context(1);
     zmq::socket_t pullSocket(context, zmq::socket_type::pull);
     pullSocket.connect(connectString);
