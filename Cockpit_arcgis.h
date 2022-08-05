@@ -38,6 +38,7 @@ class DefaultLocationDataSource;
 #include "Point.h"
 #include "positionsourcesimulator.h"
 #include "PictureMarkerSymbol.h"
+#include "PolylineBuilder.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -70,12 +71,15 @@ private:
     std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl>          cBoxMap;
     std::unique_ptr<Esri::ArcGISRuntime::PictureMarkerSymbol>   planeMarker;
     QImage*                                                     planeIcon;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationGraphicOverlay;
-
+    Esri::ArcGISRuntime::PolylineBuilder*                       polylineBuilder = nullptr;
+    Esri::ArcGISRuntime::Graphic*                               locationHistoryLineGraphic = nullptr;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryOverlay;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryLineOverlay;
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
     std::vector<QCheckBox*> m_cBoxVectors;
     std::vector<Esri::ArcGISRuntime::Point> locations;
+    Esri::ArcGISRuntime::Point lastPosition;
 
     int cBoxStateCurrent;
     QString m_leftPaneId;
@@ -85,6 +89,7 @@ private:
     double latitude;
     double longitude;
 
+
     void setupViewPoint();
     void addMarker();
     void updateMarker(Esri::ArcGISRuntime::Point);
@@ -93,7 +98,7 @@ private:
     void readGpsFromXplane();
     void setWindowsIds();
     void popupInformation();
-    void drawLocationTrail(Esri::ArcGISRuntime::Point);
+    void drawLocationTrail();
 };
 
 #endif // COCKPIT_ARCGIS_H

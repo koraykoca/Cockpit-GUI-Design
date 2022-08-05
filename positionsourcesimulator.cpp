@@ -74,7 +74,7 @@ void PositionSourceSimulator::updateFromZmq(QVector<  double> newLocation){
     m_currentPosition.setCoordinate(QGeoCoordinate(lat,lon));
     // m_currentPosition.setAttribute(QGeoPositionInfo::Direction, heading);
     emit positionUpdated(m_currentPosition);
-    qDebug() << "called this here form Position source";
+    //qDebug() << "called this here form Position source";
 
 
 }
