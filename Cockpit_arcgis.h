@@ -73,8 +73,9 @@ private:
     QImage*                                                     planeIcon;
     Esri::ArcGISRuntime::PolylineBuilder*                       polylineBuilder = nullptr;
     Esri::ArcGISRuntime::Graphic*                               locationHistoryLineGraphic = nullptr;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryOverlay;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryPointOverlay;
     std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryLineOverlay;
+
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
     std::vector<QCheckBox*> m_cBoxVectors;
@@ -88,7 +89,7 @@ private:
     double heading;
     double latitude;
     double longitude;
-
+    int counter{0};
 
     void setupViewPoint();
     void addMarker();
@@ -98,7 +99,7 @@ private:
     void readGpsFromXplane();
     void setWindowsIds();
     void popupInformation();
-    void drawLocationTrail();
+    void displayLocationTrail();
 };
 
 #endif // COCKPIT_ARCGIS_H

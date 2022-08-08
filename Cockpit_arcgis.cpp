@@ -130,12 +130,14 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     addMarker();
     //popupInformation();
 
-    locationHistoryOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
+    // overlays to display location trails
+    locationHistoryPointOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
     locationHistoryLineOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
+    m_mapView->graphicsOverlays()->append(locationHistoryPointOverlay.get());
     m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
-    m_mapView->graphicsOverlays()->append(locationHistoryOverlay.get());
+    displayLocationTrail();
 
-    drawLocationTrail();
+    ui->panMode->setVisible(true);
 }
 
 // destructor
@@ -249,34 +251,40 @@ void cockpitArcgis::popupInformation(){
     m_mapView->graphicsOverlays()->at(1)->graphics()->at(0)->setGeometry(initPoint);
 }
 
-void cockpitArcgis::drawLocationTrail(){
+// display location trails on the map
+void cockpitArcgis::displayLocationTrail(){
 
-
+    // graphics overlay for displaying the trail
     SimpleLineSymbol* locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::green, 2, this);
     locationHistoryLineOverlay->setRenderer(new SimpleRenderer(locationLineSymbol, this));
     locationHistoryLineGraphic = new Graphic(this);
     locationHistoryLineOverlay->graphics()->append(locationHistoryLineGraphic);
 
+    // line symbols are used to display graphics and features which are based on polyline geometries
+    polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
+
+    // graphics overlay for showing points
     SimpleMarkerSymbol* locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::red, 3, this);
-    locationHistoryOverlay->setRenderer(new SimpleRenderer(locationPointSymbol, this));
-    polylineBuilder = new PolylineBuilder(SpatialReference::webMercator(), this);
+    locationHistoryPointOverlay->setRenderer(new SimpleRenderer(locationPointSymbol, this));
 
     connect(m_mapView->locationDisplay(), &LocationDisplay::locationChanged, this, [this](const Location& location)
     {
-        //locationHistoryLineGraphic->setGeometry(Geometry());
+        counter++;
 
-        if (lastPosition.isValid())
+        // clear old route
+        locationHistoryLineGraphic->setGeometry(Geometry());
+
+        if (lastPosition.isValid() && counter == 15)
         {
           polylineBuilder->addPoint(lastPosition);
-          locationHistoryOverlay->graphics()->append(new Graphic(lastPosition, this));
-          qDebug() << "updated";
+          locationHistoryPointOverlay->graphics()->append(new Graphic(lastPosition, this));
+          // update the polyline
+          locationHistoryLineGraphic->setGeometry(polylineBuilder->toGeometry());
+          counter = 0;
         }
 
         // store the current position
         lastPosition = location.position();
-        qDebug() << lastPosition.x() << "and " << lastPosition.y();
-
-        locationHistoryLineGraphic->setGeometry(polylineBuilder->toGeometry());
     });
 }
 
