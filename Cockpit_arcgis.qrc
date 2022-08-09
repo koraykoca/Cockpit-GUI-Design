@@ -3,5 +3,13 @@
         <file>mapMarker.png</file>
         <file>guiParamFile.xml</file>
         <file>windowsId.xml</file>
+        <file>images_for_coordinates/aispeedgauge.png</file>
+        <file>images_for_coordinates/altimeter.png</file>
+        <file>images_for_coordinates/altitudeindiccator.png</file>
+        <file>images_for_coordinates/horizontalspeedindicator.png</file>
+        <file>images_for_coordinates/map.png</file>
+        <file>images_for_coordinates/radiomagneticindicator.png</file>
+        <file>images_for_coordinates/verticalspeedindicator.png</file>
+        <file>windows.png</file>
     </qresource>
 </RCC>

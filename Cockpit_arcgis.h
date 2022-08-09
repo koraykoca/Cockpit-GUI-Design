@@ -52,7 +52,6 @@ public slots:
     void arrangeLayers(QString);
     void getCBoxState(int);
     void planeGpsPositionChanged(QVector<  double> newPosition);
-
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
@@ -81,6 +80,7 @@ private:
     void createLayerMenu(std::vector<QString> &, std::vector<QString> &);
     void readGpsFromXplane();
     void setWindowsIds();
+
 };
 
 #endif // COCKPIT_ARCGIS_H
