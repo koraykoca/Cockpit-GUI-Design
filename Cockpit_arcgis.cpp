@@ -89,6 +89,8 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
 
+
+
     QWindow* rightPanelContainer = QWindow::fromWinId(right);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
     QVBoxLayout* layoutRightPanel = new QVBoxLayout();
@@ -132,8 +134,8 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     addMarker();
 
     Circle* c = new Circle();
-    c->setParent(ui->centralwidget);
-    c->move(800,400);
+//    c->setParent(ui->centralwidget);
+    c->move(450,700);
     c->show();
 
 
