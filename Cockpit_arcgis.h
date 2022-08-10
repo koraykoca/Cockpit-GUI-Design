@@ -52,6 +52,9 @@ public slots:
     void arrangeLayers(QString);
     void getCBoxState(int);
     void planeGpsPositionChanged(QVector<  double> newPosition);
+
+protected:
+    void closeEvent(QCloseEvent* e) override;
 private:
     Esri::ArcGISRuntime::Map*                   m_map = nullptr;
     Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
@@ -64,6 +67,9 @@ private:
     Esri::ArcGISRuntime::ServiceFeatureTable*   ftrTable;
     Esri::ArcGISRuntime::FeatureLayer*          ftrLayer;
     PositionSourceSimulator* m_positionSourceSimulator = nullptr;
+    QWidget* m_rightPanelWidget;
+    QWidget* m_leftPanelWidget;
+
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;

@@ -7,7 +7,7 @@ Circle::Circle(QWidget *parent)
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlag(Qt::WindowTransparentForInput);
     setAttribute(Qt::WA_TransparentForMouseEvents);
-//    setWindowFlag(Qt::FramelessWindowHint);
+    setWindowFlag(Qt::FramelessWindowHint);
     QTimer::singleShot(5000, this, SLOT(close()));
     adjustSize();
 
