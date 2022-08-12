@@ -255,7 +255,7 @@ void cockpitArcgis::popupInformation(){
 void cockpitArcgis::displayLocationTrail(){
 
     // graphics overlay for displaying the trail
-    SimpleLineSymbol* locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::green, 2, this);
+    SimpleLineSymbol* locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::blue, 2, this);
     locationHistoryLineOverlay->setRenderer(new SimpleRenderer(locationLineSymbol, this));
     locationHistoryLineGraphic = new Graphic(this);
     locationHistoryLineOverlay->graphics()->append(locationHistoryLineGraphic);
@@ -264,7 +264,7 @@ void cockpitArcgis::displayLocationTrail(){
     polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
 
     // graphics overlay for showing points
-    SimpleMarkerSymbol* locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::red, 3, this);
+    SimpleMarkerSymbol* locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::green, 3, this);
     locationHistoryPointOverlay->setRenderer(new SimpleRenderer(locationPointSymbol, this));
 
     connect(m_mapView->locationDisplay(), &LocationDisplay::locationChanged, this, [this](const Location& location)
@@ -274,17 +274,18 @@ void cockpitArcgis::displayLocationTrail(){
         // clear old route
         locationHistoryLineGraphic->setGeometry(Geometry());
 
-        if (lastPosition.isValid() && counter == 15)
+        if (lastPosition.isValid() && counter == 5)
         {
           polylineBuilder->addPoint(lastPosition);
           locationHistoryPointOverlay->graphics()->append(new Graphic(lastPosition, this));
-          // update the polyline
-          locationHistoryLineGraphic->setGeometry(polylineBuilder->toGeometry());
           counter = 0;
         }
 
         // store the current position
         lastPosition = location.position();
+
+        // update the polyline
+        locationHistoryLineGraphic->setGeometry(polylineBuilder->toGeometry());
     });
 }
 
