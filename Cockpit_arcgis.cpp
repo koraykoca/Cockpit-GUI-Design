@@ -83,18 +83,20 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     long right = m_rightPaneId.toLong(&rightOk,16);
 
     QWindow* leftPanelContainer = QWindow::fromWinId(left);
-    QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
+    leftPanelContainer->setFlag(Qt::FramelessWindowHint);
+    m_leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
     QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
-    layoutLeftPanel->addWidget(leftPanelWidget);
+    layoutLeftPanel->addWidget(m_leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
 
 
 
     QWindow* rightPanelContainer = QWindow::fromWinId(right);
-    QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
+    rightPanelContainer->setFlag(Qt::FramelessWindowHint);
+    m_rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
     QVBoxLayout* layoutRightPanel = new QVBoxLayout();
-    layoutRightPanel->addWidget(rightPanelWidget);
+    layoutRightPanel->addWidget(m_rightPanelWidget);
     layoutRightPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerRight->setLayout(layoutRightPanel);
     //create the action behaviours
@@ -328,6 +330,23 @@ void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
     currentPosition.setCoordinate(c);
     //  emit positionUpdated(currentPosition);
 
+}
+
+void cockpitArcgis::closeEvent(QCloseEvent *e)
+{
+
+    m_leftPanelWidget->setParent(nullptr);
+    m_leftPanelWidget->setWindowFlags(Qt::Window);
+    m_leftPanelWidget->setWindowTitle("LeftPane");
+    m_leftPanelWidget->show();
+
+    m_rightPanelWidget->setParent(nullptr);
+    m_rightPanelWidget->setWindowFlags(Qt::Window);
+    m_rightPanelWidget->setWindowTitle("RightPane");
+    m_rightPanelWidget->show();
+
+    Q_UNUSED(e);
+    QWidget::close();
 }
 
 
