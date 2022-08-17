@@ -14,10 +14,10 @@
 TARGET = cockpit_arcgis
 TEMPLATE = app
 
-CONFIG += c++14
+CONFIG += c++17
 
 # additional modules are pulled in via arcgisruntime.pri
-QT += widgets xml positioning
+QT += widgets xml positioning gui
 #LIBS += -L/usr/local/lib -lyaml-cpp
 
 equals(QT_MAJOR_VERSION, 5) {
@@ -38,19 +38,26 @@ win32:CONFIG += \
     embed_manifest_exe
 
 SOURCES += \
+    circle.cpp \
+    coordinategrabber.cpp \
     main.cpp \
     Cockpit_arcgis.cpp \
+    overlay.cpp \
     positionsourcesimulator.cpp \
     zmqreciever.cpp
 
 HEADERS += \
     Cockpit_arcgis.h \
+    circle.h \
+    coordinategrabber.h \
+    overlay.h \
     positionsourcesimulator.h \
     zmqreciever.h
 
 LIBS += -L/usr/lib -lzmq
+LIBS += -L/usr/lib -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui
 
-
+INCLUDEPATH += /usr/include/opencv4/
 #-------------------------------------------------------------------------------
 
 RESOURCES += \
