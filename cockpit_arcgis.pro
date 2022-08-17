@@ -14,7 +14,7 @@
 TARGET = cockpit_arcgis
 TEMPLATE = app
 
-CONFIG += c++20
+CONFIG += c++17
 
 # additional modules are pulled in via arcgisruntime.pri
 QT += widgets xml positioning gui
