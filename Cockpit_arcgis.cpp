@@ -46,7 +46,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
   , ui(new Ui::MainWindow)
 {
-    m_map = new Map(this);
+    m_map = new Map(BasemapStyle::ArcGISNova, this);  // default ArcGISNova Basemap
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -88,8 +88,6 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     layoutLeftPanel->addWidget(leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
-
-
 
     QWindow* rightPanelContainer = QWindow::fromWinId(right);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
@@ -139,7 +137,6 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
     displayLocationTrail();
 
-    setBaseMap(14);
     createBaseMapMenu();
     connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
 
@@ -214,7 +211,6 @@ void cockpitArcgis::addMarker(){
 // move the marker to a new position
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
-    setBaseMap(24);
 }
 
 // display coordinate while hovering the mouse (keep pressing) over the map
