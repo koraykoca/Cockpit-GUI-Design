@@ -37,6 +37,9 @@ class DefaultLocationDataSource;
 #include "ServiceFeatureTable.h"
 #include "Point.h"
 #include "positionsourcesimulator.h"
+#include "PictureMarkerSymbol.h"
+#include "PolylineBuilder.h"
+#include "Basemap.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -50,28 +53,49 @@ public slots:
     void displayCoordinate(QMouseEvent&);
     void addLayer(QUrl);
     void arrangeLayers(QString);
-    void getCBoxState(int);
+    void getLayerCBoxState(int);
+    void getMapCBoxState(int);
     void planeGpsPositionChanged(QVector<  double> newPosition);
+    void updatesFromZmq(QVector<double> newAttributes);
+    void setBaseMap(int);
+
 private:
-    Esri::ArcGISRuntime::Map*                   m_map = nullptr;
-    Esri::ArcGISRuntime::MapGraphicsView*       m_mapView = nullptr;
-    Esri::ArcGISRuntime::DefaultLocationDataSource* m_d = nullptr;
-    Ui::MainWindow*                             ui;
-    std::unique_ptr<QVBoxLayout>                layoutMap;
-    QMenu*                                      layerMenu;
-    QList<QAction*>                             actionList;
-    QSignalMapper*                              signalMapper;
-    Esri::ArcGISRuntime::ServiceFeatureTable*   ftrTable;
-    Esri::ArcGISRuntime::FeatureLayer*          ftrLayer;
-    PositionSourceSimulator* m_positionSourceSimulator = nullptr;
+    Esri::ArcGISRuntime::Map*                                   m_map = nullptr;
+    Esri::ArcGISRuntime::MapGraphicsView*                       m_mapView = nullptr;
+    Esri::ArcGISRuntime::DefaultLocationDataSource*             m_d = nullptr;
+    Ui::MainWindow*                                             ui;
+    std::unique_ptr<QVBoxLayout>                                layoutMap;
+    QMenu*                                                      layerMenu;
+    QList<QAction*>                                             actionList;
+    QSignalMapper*                                              layerSignalMapper;
+    QSignalMapper*                                              mapSignalMapper;
+    Esri::ArcGISRuntime::ServiceFeatureTable*                   ftrTable;
+    Esri::ArcGISRuntime::FeatureLayer*                          ftrLayer;
+    PositionSourceSimulator*                                    m_positionSourceSimulator = nullptr;
+    std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl>          cBoxMap;
+    std::unique_ptr<Esri::ArcGISRuntime::PictureMarkerSymbol>   planeMarker;
+    QImage*                                                     planeIcon;
+    Esri::ArcGISRuntime::PolylineBuilder*                       polylineBuilder = nullptr;
+    Esri::ArcGISRuntime::Graphic*                               locationHistoryLineGraphic = nullptr;
+    Esri::ArcGISRuntime::Basemap*                               basemap;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryPointOverlay;
+    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryLineOverlay;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
     std::vector<QCheckBox*> m_cBoxVectors;
-    std::map<Esri::ArcGISRuntime::FeatureLayer*, QUrl> cBoxMap;
-    int cBoxStateCurrent;
+    std::vector<Esri::ArcGISRuntime::Point> locations;
+    Esri::ArcGISRuntime::Point lastPosition;
+
+    int layerCBoxStateCurrent;
+    int mapCBoxStateCurrent;
     QString m_leftPaneId;
     QString m_rightPaneId;
+    double altitude;
+    double heading;
+    double latitude;
+    double longitude;
+    int counter{0};
 
     void setupViewPoint();
     void addMarker();
@@ -80,7 +104,9 @@ private:
     void createLayerMenu(std::vector<QString> &, std::vector<QString> &);
     void readGpsFromXplane();
     void setWindowsIds();
-
+    void popupInformation();
+    void displayLocationTrail();
+    void createBaseMapMenu();
 };
 
 #endif // COCKPIT_ARCGIS_H

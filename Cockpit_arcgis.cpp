@@ -24,10 +24,11 @@
 #include "Map.h"
 #include "MapGraphicsView.h"
 #include "FeatureLayer.h"
-#include "PictureMarkerSymbol.h"
 #include "CoordinateFormatter.h"
 #include "AbstractLocationDataSource.h"
 #include "DefaultLocationDataSource.h"
+#include <SimpleMarkerSymbol.h>
+#include "SimpleRenderer.h"
 
 #include <zmq.hpp>
 #include<iostream>
@@ -45,8 +46,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
   , ui(new Ui::MainWindow)
 {
-    // Create a map using the ArcGISTopographic BasemapStyle
-    m_map = new Map(BasemapStyle::ArcGISNova, this);
+    m_map = new Map(this);
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -102,50 +102,57 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
 
     // get location information
-
-    //   m_mapView->locationDisplay()->stop();
-
     ZmqReciever* zmqReciever = new ZmqReciever(this);
-
     m_positionSourceSimulator = new PositionSourceSimulator(zmqReciever, this);
-
-    //m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Navigation);
-    m_mapView->locationDisplay()->start();
-    m_mapView->locationDisplay()->setInitialZoomScale(100000);
-    m_mapView->setZoomByPinchingEnabled(true);
-    m_mapView->setRotationByPinchingEnabled(true);
-  //  m_mapView->setViewpointScale(100);
-   // m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator); //Look for alternative later
+    connect(zmqReciever, &ZmqReciever::gpsPositionChanged, this, &cockpitArcgis::updatesFromZmq);
 
     m_d = new DefaultLocationDataSource(this);
     m_d->setPositionInfoSource(m_positionSourceSimulator);
-    m_d->start();
+    planeIcon = new QImage(":/planeIcon.png");
+    planeMarker = std::make_unique<PictureMarkerSymbol>(*planeIcon, this);
+    m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     m_mapView->locationDisplay()->setDataSource(m_d);
-    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::CompassNavigation);
+    m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Recenter);
 
+    m_mapView->locationDisplay()->setInitialZoomScale(100000);
+    m_mapView->setZoomByPinchingEnabled(true);
+    m_mapView->setRotationByPinchingEnabled(true);
+    // m_mapView->setViewpointScale(100);
+    // m_mapView->locationDisplay()->setPositionSource(m_positionSourceSimulator);  //ToDo: Look for alternative later
+    m_mapView->locationDisplay()->start();
+    m_d->start();
 
     // call the functions
     setLayersUrlVector();
     if (m_layerNames.size()){
         createLayerMenu(m_layerNames, m_urlVectors);
-        connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
+        connect(layerSignalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
     }
     // setupViewPoint();
     addMarker();
+    //popupInformation();
+
+    // overlays to display location trails
+    locationHistoryPointOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
+    locationHistoryLineOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
+    m_mapView->graphicsOverlays()->append(locationHistoryPointOverlay.get());
+    m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
+    displayLocationTrail();
+
+    setBaseMap(14);
+    createBaseMapMenu();
+    connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
 
     Circle* c = new Circle();
 //    c->setParent(ui->centralwidget);
     c->move(450,700);
     c->show();
 
-
 //    overlay* m_overlay = new overlay(this);
 //    m_overlay->setParent(ui->centralwidget);
 //    m_overlay->resize(ui->menuFrame->size());
 //    m_overlay->move(50,50);
 //    m_overlay->show();
-
-
 
 }
 
@@ -159,23 +166,21 @@ cockpitArcgis::~cockpitArcgis()
 /* class functions out-of-line definitions */
 // focus on a specified area of the map with animation
 void cockpitArcgis::setupViewPoint(){
-
-
     const Point center(11.35287, 48.06942, SpatialReference::wgs84());
     const Viewpoint viewpoint(center, 100000.0);
     m_mapView->setViewpointAnimated(viewpoint, 1.5, AnimationCurve::EaseInQuint);
 }
 
 void cockpitArcgis::arrangeLayers(QString name){
-    if (cBoxStateCurrent == 2){  // the item is checked.
+    if (layerCBoxStateCurrent == 2){  // the item is checked.
         addLayer(QUrl(name));
     }
-    if (cBoxStateCurrent == 0){  // the item is unchecked.
+    if (layerCBoxStateCurrent == 0){  // the item is unchecked.
             for(auto &i : cBoxMap){
                 if (i.second == QUrl(name)){
                     m_map->operationalLayers()->removeOne(i.first);
                     cBoxMap.erase(i.first);
-                    break;
+                    break;layerMenu = new QMenu();
             }
         }
     }
@@ -190,7 +195,7 @@ void cockpitArcgis::addLayer(QUrl path){
     cBoxMap.insert(std::pair<FeatureLayer*,QUrl>(ftrLayer,path));
 }
 
-// add marker to a specific coordinate
+// add marker to the map
 void cockpitArcgis::addMarker(){
     Point startPoint;
     QVariantMap attr;
@@ -198,7 +203,7 @@ void cockpitArcgis::addMarker(){
 
     QImage icon{":/mapMarker.png"};  // get image from resources
     std::unique_ptr<PictureMarkerSymbol> marker = std::make_unique<PictureMarkerSymbol>(icon, this);
-    marker->setOffsetY(12);
+    marker->setOffsetY(12);  // put the tip of the marker on where clicked
 
     std::unique_ptr<Graphic> graphicElement = std::make_unique<Graphic>(startPoint, attr, marker.get(), this);
     std::unique_ptr<GraphicsOverlay> graphicOverlay = std::make_unique<GraphicsOverlay>(this);
@@ -206,11 +211,11 @@ void cockpitArcgis::addMarker(){
     m_mapView->graphicsOverlays()->append(graphicOverlay.get());
 }
 
-// refresh marker position
+// move the marker to a new position
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
+    setBaseMap(24);
 }
-
 
 // display coordinate while hovering the mouse (keep pressing) over the map
 void cockpitArcgis::displayCoordinate(QMouseEvent& event){
@@ -232,12 +237,12 @@ void cockpitArcgis::getCoordinate(QMouseEvent& event){
 void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QString>& url){
     ui->layersToolButton->setPopupMode(QToolButton::InstantPopup);
     layerMenu = new QMenu();
-    signalMapper = new QSignalMapper(this);
+    layerSignalMapper = new QSignalMapper(this);
     for(unsigned long i=0 ; i<name.size(); i++){
         m_cBoxVectors.push_back(new QCheckBox(name[i]));
-        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getCBoxState(int)));
-        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), signalMapper, SLOT(map()));
-        signalMapper->setMapping(m_cBoxVectors[i], url[i]);
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getLayerCBoxState(int)));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), layerSignalMapper, SLOT(map()));
+        layerSignalMapper->setMapping(m_cBoxVectors[i], url[i]);
         auto action = new QWidgetAction(m_cBoxVectors[i]);
         action->setDefaultWidget(m_cBoxVectors[i]);
         actionList.append(action);
@@ -246,8 +251,110 @@ void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QStr
     ui->layersToolButton->setMenu(layerMenu);
 }
 
-void cockpitArcgis::getCBoxState(int state){
-    cBoxStateCurrent = state;
+void cockpitArcgis::getLayerCBoxState(int state){
+    layerCBoxStateCurrent = state;
+}
+
+void cockpitArcgis::getMapCBoxState(int state){
+    mapCBoxStateCurrent = state;
+}
+
+// add popup information next to the plane
+void cockpitArcgis::popupInformation(){
+    Point initPoint{13.3227, 47.4882};
+    TextSymbol* textSymbol = new TextSymbol("TESSSTT", QColor(Qt::darkBlue), 24.0, HorizontalAlignment::Right, VerticalAlignment::Middle, m_mapView);
+    textSymbol->setBackgroundColor(QColor(Qt::darkYellow));
+    std::unique_ptr<Graphic> textGraphic = std::make_unique<Graphic>(initPoint, textSymbol, m_mapView);
+    std::unique_ptr<GraphicsOverlay> graphicOverlay2 = std::make_unique<GraphicsOverlay>(m_mapView);
+    graphicOverlay2->graphics()->append(textGraphic.get());
+    m_mapView->graphicsOverlays()->append(graphicOverlay2.get());
+    m_mapView->graphicsOverlays()->at(1)->graphics()->at(0)->setGeometry(initPoint);
+}
+
+// display location trails on the map
+void cockpitArcgis::displayLocationTrail(){
+
+    // graphics overlay for displaying the trail
+    SimpleLineSymbol* locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::blue, 2, this);
+    locationHistoryLineOverlay->setRenderer(new SimpleRenderer(locationLineSymbol, this));
+    locationHistoryLineGraphic = new Graphic(this);
+    locationHistoryLineOverlay->graphics()->append(locationHistoryLineGraphic);
+
+    // line symbols are used to display graphics and features which are based on polyline geometries
+    polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
+
+    // graphics overlay for showing points
+    SimpleMarkerSymbol* locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::green, 3, this);
+    locationHistoryPointOverlay->setRenderer(new SimpleRenderer(locationPointSymbol, this));
+
+    connect(m_mapView->locationDisplay(), &LocationDisplay::locationChanged, this, [this](const Location& location)
+    {
+        counter++;
+
+        // clear old route
+        locationHistoryLineGraphic->setGeometry(Geometry());
+
+        if (lastPosition.isValid() && counter == 5)
+        {
+          polylineBuilder->addPoint(lastPosition);
+          locationHistoryPointOverlay->graphics()->append(new Graphic(lastPosition, this));
+          counter = 0;
+        }
+
+        // store the current position
+        lastPosition = location.position();
+
+        // update the polyline
+        locationHistoryLineGraphic->setGeometry(polylineBuilder->toGeometry());
+    });
+}
+
+void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
+    latitude = newAttributes[0];           // deg
+    longitude = newAttributes[1];          // deg
+    altitude = newAttributes[2];           // m above MSL
+    heading = newAttributes[5];            // deg
+    QImage transformed_planeIcon = planeIcon->transformed(QTransform().rotate(heading), Qt::SmoothTransformation);
+    planeMarker = std::make_unique<PictureMarkerSymbol>(transformed_planeIcon, this);
+    m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
+    // m_mapView->setViewpointRotation(heading);  // rotate the map itself
+    Point loc{latitude, longitude};
+}
+
+// construct layer menu
+void cockpitArcgis::createBaseMapMenu(){
+    ui->panModeButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu* baseMapsMenu = new QMenu();
+    QCheckBox* CBoxTopographic = new QCheckBox("Topographic");
+    QCheckBox* CBoxNova = new QCheckBox("Nova");
+    mapSignalMapper = new QSignalMapper(this);
+    connect(CBoxTopographic, SIGNAL(stateChanged(int)), this, SLOT(getMapCBoxState(int)));
+    connect(CBoxTopographic, SIGNAL(stateChanged(int)), mapSignalMapper, SLOT(map()));
+    mapSignalMapper->setMapping(CBoxTopographic, 14);
+    connect(CBoxNova, SIGNAL(stateChanged(int)), this, SLOT(getMapCBoxState(int)));
+    connect(CBoxNova, SIGNAL(stateChanged(int)), mapSignalMapper, SLOT(map()));
+    mapSignalMapper->setMapping(CBoxNova, 24);
+    auto actionTopographic = new QWidgetAction(CBoxTopographic);
+    auto actionNova = new QWidgetAction(CBoxNova);
+    actionTopographic->setDefaultWidget(CBoxTopographic);
+    actionNova->setDefaultWidget(CBoxNova);
+    baseMapsMenu->addAction(actionTopographic);
+    baseMapsMenu->addAction(actionNova);
+    ui->panModeButton->setMenu(baseMapsMenu);
+}
+
+void cockpitArcgis::setBaseMap(int style){
+    if (mapCBoxStateCurrent == 2){  // the item is checked.
+        switch (style){
+            case 14:
+                basemap = new Basemap(BasemapStyle::ArcGISTopographic, this);
+            break;
+            case 24:
+                basemap = new Basemap(BasemapStyle::ArcGISNova, this);
+        }
+        m_map->setBasemap(basemap);
+        m_mapView->setMap(m_map);
+    }
 }
 
 // read layer data from XML file
@@ -329,5 +436,3 @@ void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
     //  emit positionUpdated(currentPosition);
 
 }
-
-

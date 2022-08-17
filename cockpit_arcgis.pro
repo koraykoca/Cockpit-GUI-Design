@@ -61,7 +61,5 @@ INCLUDEPATH += /usr/include/opencv4/
 RESOURCES += \
     Cockpit_arcgis.qrc
 
-DISTFILES +=
-
 FORMS += \
     Cockpit_arcgis.ui

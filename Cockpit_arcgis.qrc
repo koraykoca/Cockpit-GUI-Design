@@ -3,6 +3,8 @@
         <file>mapMarker.png</file>
         <file>guiParamFile.xml</file>
         <file>windowsId.xml</file>
+        <file>planeIcon.png</file>
+        <file>lineIcon.png</file>
         <file>images_for_coordinates/aispeedgauge.png</file>
         <file>images_for_coordinates/altimeter.png</file>
         <file>images_for_coordinates/altitudeindiccator.png</file>

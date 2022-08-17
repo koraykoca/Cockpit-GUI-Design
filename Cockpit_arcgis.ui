@@ -161,6 +161,22 @@ p, li { white-space: pre-wrap; }
       <string>Select Layers</string>
      </property>
     </widget>
+    <widget class="QToolButton" name="panModeButton">
+     <property name="geometry">
+      <rect>
+       <x>620</x>
+       <y>0</y>
+       <width>180</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Map Mode</string>
+     </property>
+     <property name="popupMode">
+      <enum>QToolButton::InstantPopup</enum>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
