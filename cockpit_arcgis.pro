@@ -32,6 +32,8 @@ equals(QT_MAJOR_VERSION, 5) {
 ARCGIS_RUNTIME_VERSION = 100.14.1
 include($$PWD/arcgisruntime.pri)
 
+include(home/unibw/dev/cpp/arcgis/arcgis-runtime-toolkit-qt/uitools/toolkitwidgets.pri)
+
 win32:CONFIG += \
     embed_manifest_exe
 

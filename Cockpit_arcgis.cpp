@@ -30,7 +30,6 @@
 #include <SimpleMarkerSymbol.h>
 #include "SimpleRenderer.h"
 
-
 #include <zmq.hpp>
 #include<iostream>
 #include <cstdlib>
@@ -45,8 +44,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
   , ui(new Ui::MainWindow)
 {
-    // Create a map using the ArcGISTopographic BasemapStyle
-    m_map = new Map(BasemapStyle::ArcGISNova, this);
+    m_map = new Map(this);
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -124,7 +122,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     setLayersUrlVector();
     if (m_layerNames.size()){
         createLayerMenu(m_layerNames, m_urlVectors);
-        connect(signalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
+        connect(layerSignalMapper, SIGNAL(mappedString(QString)), this, SLOT(arrangeLayers(QString)));
     }
     // setupViewPoint();
     addMarker();
@@ -137,7 +135,9 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
     displayLocationTrail();
 
-    ui->panMode->setVisible(true);
+    setBaseMap(14);
+    createBaseMapMenu();
+    connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
 }
 
 // destructor
@@ -156,15 +156,15 @@ void cockpitArcgis::setupViewPoint(){
 }
 
 void cockpitArcgis::arrangeLayers(QString name){
-    if (cBoxStateCurrent == 2){  // the item is checked.
+    if (layerCBoxStateCurrent == 2){  // the item is checked.
         addLayer(QUrl(name));
     }
-    if (cBoxStateCurrent == 0){  // the item is unchecked.
+    if (layerCBoxStateCurrent == 0){  // the item is unchecked.
             for(auto &i : cBoxMap){
                 if (i.second == QUrl(name)){
                     m_map->operationalLayers()->removeOne(i.first);
                     cBoxMap.erase(i.first);
-                    break;
+                    break;layerMenu = new QMenu();
             }
         }
     }
@@ -198,7 +198,7 @@ void cockpitArcgis::addMarker(){
 // move the marker to a new position
 void cockpitArcgis::updateMarker(Point newPoint){
     m_mapView->graphicsOverlays()->at(0)->graphics()->at(0)->setGeometry(newPoint);
-    qDebug() << newPoint.x() << newPoint.y();
+    setBaseMap(24);
 }
 
 // display coordinate while hovering the mouse (keep pressing) over the map
@@ -221,12 +221,12 @@ void cockpitArcgis::getCoordinate(QMouseEvent& event){
 void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QString>& url){
     ui->layersToolButton->setPopupMode(QToolButton::InstantPopup);
     layerMenu = new QMenu();
-    signalMapper = new QSignalMapper(this);
+    layerSignalMapper = new QSignalMapper(this);
     for(unsigned long i=0 ; i<name.size(); i++){
         m_cBoxVectors.push_back(new QCheckBox(name[i]));
-        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getCBoxState(int)));
-        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), signalMapper, SLOT(map()));
-        signalMapper->setMapping(m_cBoxVectors[i], url[i]);
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), this, SLOT(getLayerCBoxState(int)));
+        connect(m_cBoxVectors[i], SIGNAL(stateChanged(int)), layerSignalMapper, SLOT(map()));
+        layerSignalMapper->setMapping(m_cBoxVectors[i], url[i]);
         auto action = new QWidgetAction(m_cBoxVectors[i]);
         action->setDefaultWidget(m_cBoxVectors[i]);
         actionList.append(action);
@@ -235,8 +235,12 @@ void cockpitArcgis::createLayerMenu(std::vector<QString>& name, std::vector<QStr
     ui->layersToolButton->setMenu(layerMenu);
 }
 
-void cockpitArcgis::getCBoxState(int state){
-    cBoxStateCurrent = state;
+void cockpitArcgis::getLayerCBoxState(int state){
+    layerCBoxStateCurrent = state;
+}
+
+void cockpitArcgis::getMapCBoxState(int state){
+    mapCBoxStateCurrent = state;
 }
 
 // add popup information next to the plane
@@ -299,7 +303,42 @@ void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     // m_mapView->setViewpointRotation(heading);  // rotate the map itself
     Point loc{latitude, longitude};
+}
 
+// construct layer menu
+void cockpitArcgis::createBaseMapMenu(){
+    ui->panModeButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu* baseMapsMenu = new QMenu();
+    QCheckBox* CBoxTopographic = new QCheckBox("Topographic");
+    QCheckBox* CBoxNova = new QCheckBox("Nova");
+    mapSignalMapper = new QSignalMapper(this);
+    connect(CBoxTopographic, SIGNAL(stateChanged(int)), this, SLOT(getMapCBoxState(int)));
+    connect(CBoxTopographic, SIGNAL(stateChanged(int)), mapSignalMapper, SLOT(map()));
+    mapSignalMapper->setMapping(CBoxTopographic, 14);
+    connect(CBoxNova, SIGNAL(stateChanged(int)), this, SLOT(getMapCBoxState(int)));
+    connect(CBoxNova, SIGNAL(stateChanged(int)), mapSignalMapper, SLOT(map()));
+    mapSignalMapper->setMapping(CBoxNova, 24);
+    auto actionTopographic = new QWidgetAction(CBoxTopographic);
+    auto actionNova = new QWidgetAction(CBoxNova);
+    actionTopographic->setDefaultWidget(CBoxTopographic);
+    actionNova->setDefaultWidget(CBoxNova);
+    baseMapsMenu->addAction(actionTopographic);
+    baseMapsMenu->addAction(actionNova);
+    ui->panModeButton->setMenu(baseMapsMenu);
+}
+
+void cockpitArcgis::setBaseMap(int style){
+    if (mapCBoxStateCurrent == 2){  // the item is checked.
+        switch (style){
+            case 14:
+                basemap = new Basemap(BasemapStyle::ArcGISTopographic, this);
+            break;
+            case 24:
+                basemap = new Basemap(BasemapStyle::ArcGISNova, this);
+        }
+        m_map->setBasemap(basemap);
+        m_mapView->setMap(m_map);
+    }
 }
 
 // read layer data from XML file
