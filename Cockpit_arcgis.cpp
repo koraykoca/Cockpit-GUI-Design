@@ -142,7 +142,6 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     setBaseMap(14);
     createBaseMapMenu();
     connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
-    popupInformation();
 
     Circle* c = new Circle();
 //    c->setParent(ui->centralwidget);
