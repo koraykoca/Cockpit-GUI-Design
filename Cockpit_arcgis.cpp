@@ -36,6 +36,8 @@
 
 #include "zmqreciever.h"
 #include "positionsourcesimulator.h"
+#include "overlay.h"
+#include "circle.h"
 
 
 using namespace Esri::ArcGISRuntime;
@@ -86,6 +88,8 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     layoutLeftPanel->addWidget(leftPanelWidget);
     layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
     ui->airManagerLeft->setLayout(layoutLeftPanel);
+
+
 
     QWindow* rightPanelContainer = QWindow::fromWinId(right);
     QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
@@ -138,6 +142,19 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     setBaseMap(14);
     createBaseMapMenu();
     connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
+
+    Circle* c = new Circle();
+//    c->setParent(ui->centralwidget);
+    c->move(450,700);
+    c->show();
+
+
+//    overlay* m_overlay = new overlay(this);
+//    m_overlay->setParent(ui->centralwidget);
+//    m_overlay->resize(ui->menuFrame->size());
+//    m_overlay->move(50,50);
+//    m_overlay->show();
+
 }
 
 // destructor
@@ -401,6 +418,7 @@ void cockpitArcgis::setWindowsIds()
             }
         }
     }
+
 }
 
 void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
@@ -419,4 +437,3 @@ void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){
     //  emit positionUpdated(currentPosition);
 
 }
-

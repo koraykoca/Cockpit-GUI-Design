@@ -23,6 +23,7 @@
 #include "ArcGISRuntimeEnvironment.h"
 #include "Cockpit_arcgis.h"
 #include "zmqreciever.h"
+#include "coordinategrabber.h"
 
 using namespace Esri::ArcGISRuntime;
 
@@ -108,6 +109,8 @@ int main(int argc, char *argv[])
     applicationWindow.setMinimumWidth(800);
     applicationWindow.setMinimumHeight(600);
     applicationWindow.show();
+
+    CoordinateGrabber c;
 
 
 

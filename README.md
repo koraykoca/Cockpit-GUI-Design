@@ -2,19 +2,21 @@
 
 ## System Setup
 
-* Install ArcGIS Runtime SDK __*v100.14.1*__ for Qt API on Linux. Follow the steps at the link:
-  https://developers.arcgis.com/qt/install-and-set-up/#install-on-linux
+* Install [Qt Framework _**5.15.2**_](https://developers.arcgis.com/qt/install-and-set-up/#download-the-qt-framework-for-linux-and-qt-creator) and        [ArcGIS Runtime SDK __*v100.14.1*__ for Qt API](https://developers.arcgis.com/qt/install-and-set-up/#install-arcgis-runtime-api-for-qt) on Linux.
 
-* Download Qt wrapper for yaml.cpp and move it to the __*/usr/include/yaml-cpp*__ directory.
-  https://gist.github.com/brcha/d392b2fe5f1e427cc8a6
+* Open a new terminal and paste the following command:
 
-* Go to your terminal and paste the following command:
-  `mkdir -p ~/dev/cpp/arcgis \
-  && cd ~/dev/cpp/arcgis \
-  && git clone https://git.unibw.de/angewandte-ki-f-r-dynamische-systeme/cockpit-arcgis.git
-  && git clone https://git.unibw.de/angewandte-ki-f-r-dynamische-systeme/cockpit-helper.git`
+  `mkdir -p ~/dev/cpp/arcgis && cd ~/dev/cpp/arcgis`
 
-* Open the Qt Creator and then click on __*Open Project*__. Go to your cloned folder cockpit-arcgis and select .pro file. 
+  Then clone the repositories:
+
+  `git clone https://git.unibw.de/angewandte-ki-f-r-dynamische-systeme/cockpit-arcgis.git && git clone https://git.unibw.de/angewandte-ki-f-r-dynamische-systeme/cockpit-helper.git`
+
+* run this command to install GNU Compiler Collection, ZeroMQ3 and OpenGL libraries:
+
+`sudo apt-get install build-essential && sudo apt-get install libzmq3-dev && sudo apt install libgl1-mesa-dev`
+
+* Open the Qt Creator and then click on __*Open Project*__. Go to your cloned folder cockpit-arcgis and select the .pro file. 
 
 * Create your own developer account on this website: 
   https://developers.arcgis.com/
@@ -23,32 +25,36 @@
 
 * Go to Layers section and click on __*Import Data*__, select the zip file from the repo. Then copy the Url of a layer and  replace it with the value of __*data_url*__ key in param/gui_param_file.yaml file.
 
-* Meanings of the layer data can be found here:
+* Meanings of the layer data can be found here (from page 8):
 https://tlbg.thueringen.de/fileadmin/TLBG/Vertrieb/testdaten/dlm/4-4_03_basis-dlm-aaa.pdf
-(from page 8)
+
 
 * Install anaconda, create a new conda environment and activate it:
+
 `conda create -n simauto`
 `conda activate simauto`
+
 Afterwards, go to your other cloned folder cockpit-helper and run the following command:
-`conda env update -n simauto --file environment.yaml \
-&& sudo apt-get install libzmq3-dev wmctrl scrot gawk \
-&& pip install guibot pyautogui opencv-python` \
-&& chmod +x dumpxml.sh getwinidbyname.sh
+
+`conda env update -n simauto --file environment.yaml && sudo apt-get install wmctrl scrot gawk && pip install guibot pyautogui opencv-python && chmod +x dumpxml.sh getwinidbyname.sh`
 
 * Install XPalneConnect.zip file:
 https://github.com/nasa/XPlaneConnect/releases/tag/v1.3-rc5
 
-Unzip the .zip archive and copy the folder to the plugin directory ([X-Plane Directory]/Resources/plugins/)
+Unzip the .zip archive and copy the folder to the plugin directory (`[X-Plane Directory]/Resources/plugins/`)
 
 * Install Flight Simulator Plugins: 
 https://siminnovations.com/wiki/index.php?title=Flight_Simulator_Plugins_Installation 
 
 * To run the whole project:
-- Run XPlane11 simulator
-- execute dumpxml.sh in cockpit-helper folder from a terminal:
-  `./dumpxml.sh`
-- Open Qt Creator and run the project
+  - Run XPlane11 simulator
+  - execute dumpxml.sh in cockpit-helper folder from a terminal:
+
+    `./dumpxml.sh`
+
+  or to test it quickly: `python3 read_gps.py`
+
+  - Open Qt Creator and run the project
 
 ## Contributions
 
