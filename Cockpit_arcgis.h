@@ -48,6 +48,10 @@ public:
     explicit cockpitArcgis(QWidget* parent = nullptr);
     ~cockpitArcgis() override;
 
+
+signals:
+    void timeoutDetection(const bool result);
+
 public slots:
     void getCoordinate(QMouseEvent&);
     void displayCoordinate(QMouseEvent&);
@@ -58,6 +62,8 @@ public slots:
     void planeGpsPositionChanged(QVector<  double> newPosition);
     void updatesFromZmq(QVector<double> newAttributes);
     void setBaseMap(int);
+    void addNewPolyline(const bool);
+    void detectTimeout();
 
 private:
     Esri::ArcGISRuntime::Map*                                   m_map = nullptr;

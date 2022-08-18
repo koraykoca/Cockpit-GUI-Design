@@ -111,7 +111,6 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     m_mapView->locationDisplay()->setDataSource(m_d);
     m_mapView->locationDisplay()->setAutoPanMode(LocationDisplayAutoPanMode::Recenter);
-
     m_mapView->locationDisplay()->setInitialZoomScale(100000);
     m_mapView->setZoomByPinchingEnabled(true);
     m_mapView->setRotationByPinchingEnabled(true);
@@ -139,6 +138,11 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
 
     createBaseMapMenu();
     connect(mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &cockpitArcgis::detectTimeout);
+    timer->start(100);
+    connect(this, SIGNAL(timeoutDetection(bool)), this, SLOT(addNewPolyline(bool)));
 
     Circle* c = new Circle();
 //    c->setParent(ui->centralwidget);
@@ -305,6 +309,23 @@ void cockpitArcgis::displayLocationTrail(){
     });
 }
 
+void cockpitArcgis::detectTimeout(){
+     // emits true when location being displayed is based on the last known position, and the new position is still being acquired
+     bool timeout = m_mapView->locationDisplay()->location().isLastKnown();
+     emit timeoutDetection(timeout);
+}
+
+void cockpitArcgis::addNewPolyline(const bool timeout){
+    if (timeout){
+        qDebug() << "TIME OUT DETECTED";
+        if (!polylineBuilder->isEmpty())
+            qDebug() << "EMPTY Polyline";
+            polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
+    }
+    else
+        qDebug() << "RECEIVED";
+}
+
 void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     latitude = newAttributes[0];           // deg
     longitude = newAttributes[1];          // deg
@@ -314,7 +335,6 @@ void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){
     planeMarker = std::make_unique<PictureMarkerSymbol>(transformed_planeIcon, this);
     m_mapView->locationDisplay()->setDefaultSymbol(planeMarker.get());
     // m_mapView->setViewpointRotation(heading);  // rotate the map itself
-    Point loc{latitude, longitude};
 }
 
 // construct layer menu
