@@ -27,7 +27,6 @@
 #include "CoordinateFormatter.h"
 #include "AbstractLocationDataSource.h"
 #include "DefaultLocationDataSource.h"
-#include <SimpleMarkerSymbol.h>
 #include "SimpleRenderer.h"
 
 #include <zmq.hpp>
@@ -129,11 +128,6 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     addMarker();
     //popupInformation();
 
-    // overlays to display location trails
-    locationHistoryPointOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
-    locationHistoryLineOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
-    m_mapView->graphicsOverlays()->append(locationHistoryPointOverlay.get());
-    m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
     displayLocationTrail();
 
     createBaseMapMenu();
@@ -273,9 +267,14 @@ void cockpitArcgis::popupInformation(){
 
 // display location trails on the map
 void cockpitArcgis::displayLocationTrail(){
+    // overlays to display location trails
+    locationHistoryPointOverlay = new GraphicsOverlay(m_mapView);
+    GraphicsOverlay* locationHistoryLineOverlay = new GraphicsOverlay(m_mapView);
+    m_mapView->graphicsOverlays()->append(locationHistoryPointOverlay);
+    m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay);
 
     // graphics overlay for displaying the trail
-    SimpleLineSymbol* locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, Qt::blue, 2, this);
+    locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor::fromRgb(QRandomGenerator::global()->generate()), 2, this);
     locationHistoryLineOverlay->setRenderer(new SimpleRenderer(locationLineSymbol, this));
     locationHistoryLineGraphic = new Graphic(this);
     locationHistoryLineOverlay->graphics()->append(locationHistoryLineGraphic);
@@ -284,7 +283,7 @@ void cockpitArcgis::displayLocationTrail(){
     polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
 
     // graphics overlay for showing points
-    SimpleMarkerSymbol* locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, Qt::green, 3, this);
+    locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor::fromRgb(QRandomGenerator::global()->generate()), 3, this);
     locationHistoryPointOverlay->setRenderer(new SimpleRenderer(locationPointSymbol, this));
 
     connect(m_mapView->locationDisplay(), &LocationDisplay::locationChanged, this, [this](const Location& location)
@@ -317,13 +316,10 @@ void cockpitArcgis::detectTimeout(){
 
 void cockpitArcgis::addNewPolyline(const bool timeout){
     if (timeout){
-        qDebug() << "TIME OUT DETECTED";
-        if (!polylineBuilder->isEmpty())
-            qDebug() << "EMPTY Polyline";
-            polylineBuilder = new PolylineBuilder(SpatialReference::wgs84(), this);
+        if (!polylineBuilder->isEmpty()){
+            displayLocationTrail();
+        }
     }
-    else
-        qDebug() << "RECEIVED";
 }
 
 void cockpitArcgis::updatesFromZmq(QVector<double> newAttributes){

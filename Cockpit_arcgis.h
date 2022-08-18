@@ -40,6 +40,7 @@ class DefaultLocationDataSource;
 #include "PictureMarkerSymbol.h"
 #include "PolylineBuilder.h"
 #include "Basemap.h"
+#include "SimpleMarkerSymbol.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -84,8 +85,9 @@ private:
     Esri::ArcGISRuntime::PolylineBuilder*                       polylineBuilder = nullptr;
     Esri::ArcGISRuntime::Graphic*                               locationHistoryLineGraphic = nullptr;
     Esri::ArcGISRuntime::Basemap*                               basemap;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryPointOverlay;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryLineOverlay;
+    Esri::ArcGISRuntime::SimpleLineSymbol*                      locationLineSymbol;
+    Esri::ArcGISRuntime::SimpleMarkerSymbol*                    locationPointSymbol;
+    Esri::ArcGISRuntime::GraphicsOverlay*                       locationHistoryPointOverlay;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
