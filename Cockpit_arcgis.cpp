@@ -37,7 +37,7 @@
 #include "positionsourcesimulator.h"
 #include "overlay.h"
 #include "circle.h"
-
+#include "layouts.h"
 
 using namespace Esri::ArcGISRuntime;
 
@@ -45,7 +45,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
   , m_ui(new Ui::MainWindow)
 {
-    m_map = new Map(BasemapStyle::ArcGISNova, this);  // default ArcGISNova Basemap
+    m_map = new Map(BasemapStyle::ArcGISNova, this);  // set ArcGISNova Basemap as default
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -71,29 +71,13 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Set the layout to the related frame in the GUI
     m_ui->mapFrame->setLayout(m_layoutMap.release());  // relinquish ownership to avoid double delete
 
-    setWindowsIds();
     /* Integration of AirManager Panels */
+    Layouts layouts = Layouts();
+    m_layoutLeftPanel = layouts.createlayoutLeftPanel();
+    m_layoutRightPanel = layouts.createlayoutRightPanel();
+    m_ui->airManagerLeft->setLayout(m_layoutLeftPanel);
+    m_ui->airManagerRight->setLayout(m_layoutRightPanel);
 
-    // check if the ids get converted
-    bool leftOk;
-    bool rightOk;
-
-    long left = m_leftPaneId.toLong(&leftOk, 16);
-    long right = m_rightPaneId.toLong(&rightOk,16);
-
-    QWindow* leftPanelContainer = QWindow::fromWinId(left);
-    QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
-    QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
-    layoutLeftPanel->addWidget(leftPanelWidget);
-    layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
-    m_ui->airManagerLeft->setLayout(layoutLeftPanel);
-
-    QWindow* rightPanelContainer = QWindow::fromWinId(right);
-    QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
-    QVBoxLayout* layoutRightPanel = new QVBoxLayout();
-    layoutRightPanel->addWidget(rightPanelWidget);
-    layoutRightPanel->setContentsMargins(0, 0, 0, 0);
-    m_ui->airManagerRight->setLayout(layoutRightPanel);
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
@@ -156,6 +140,8 @@ cockpitArcgis::~cockpitArcgis()
 {
     m_mapView->locationDisplay()->stop();
     delete m_ui;
+    delete m_layoutLeftPanel;
+    delete m_layoutRightPanel;
 }
 
 /* class functions out-of-line definitions */
@@ -293,7 +279,7 @@ void cockpitArcgis::displayLocationTrail(){
         // clear old route
         m_locationHistoryLineGraphic->setGeometry(Geometry());
 
-        if (m_lastPosition.isValid() && m_counter == 5)
+        if (m_lastPosition.isValid() && m_counter == 15)
         {
           m_polylineBuilder->addPoint(m_lastPosition);
           m_locationHistoryPointOverlay->graphics()->append(new Graphic(m_lastPosition, this));
@@ -405,31 +391,6 @@ void cockpitArcgis::setLayersUrlVector(){
             }
         }
     }
-}
-
-void cockpitArcgis::setWindowsIds()
-{
-    QFile xmlFile(":/windowsId.xml");
-
-    if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
-        qDebug() << "Cannot read file" << xmlFile.errorString();
-        exit(0);
-    }
-
-    QXmlStreamReader xmlReader(&xmlFile);
-
-    if (xmlReader.readNextStartElement()){
-        while(xmlReader.readNextStartElement()){
-            if (xmlReader.name() =="leftpane") {
-                m_leftPaneId = xmlReader.readElementText();
-            }
-
-            else if (xmlReader.name() =="rightpane") {
-                m_rightPaneId = xmlReader.readElementText();
-            }
-        }
-    }
-
 }
 
 void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){

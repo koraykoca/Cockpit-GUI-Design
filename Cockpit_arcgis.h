@@ -49,7 +49,6 @@ public:
     explicit cockpitArcgis(QWidget* parent = nullptr);
     ~cockpitArcgis() override;
 
-
 signals:
     void timeoutDetection(const bool result);
 
@@ -88,6 +87,8 @@ private:
     Esri::ArcGISRuntime::SimpleLineSymbol*                      m_locationLineSymbol;
     Esri::ArcGISRuntime::SimpleMarkerSymbol*                    m_locationPointSymbol;
     Esri::ArcGISRuntime::GraphicsOverlay*                       m_locationHistoryPointOverlay;
+    QVBoxLayout*                                                m_layoutLeftPanel;
+    QVBoxLayout*                                                m_layoutRightPanel;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
@@ -97,8 +98,6 @@ private:
 
     int m_layerCBoxStateCurrent;
     int m_mapCBoxStateCurrent;
-    QString m_leftPaneId;
-    QString m_rightPaneId;
     double m_altitude;
     double m_heading;
     double m_latitude;
