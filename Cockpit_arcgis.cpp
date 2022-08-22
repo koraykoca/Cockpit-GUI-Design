@@ -259,6 +259,13 @@ void cockpitArcgis::displayLocationTrail(){
         delete m_polylineBuilder;
         delete m_locationPointSymbol;
         delete m_rendererPoint;
+        m_locationHistoryPointOverlay = nullptr;
+        m_locationLineSymbol = nullptr;
+        m_rendererLine = nullptr;
+        m_locationHistoryLineGraphic = nullptr;
+        m_polylineBuilder = nullptr;
+        m_locationPointSymbol = nullptr;
+        m_rendererPoint = nullptr;
     }
     // overlays to display location trails
     m_locationHistoryPointOverlay = new GraphicsOverlay(m_mapView);
@@ -287,22 +294,23 @@ void cockpitArcgis::displayLocationTrail(){
     {
         m_counter++;
 
-        // clear old route
-        m_locationHistoryLineGraphic->setGeometry(Geometry());
-
-        if (m_lastPosition.isValid() && m_counter == 15)
-        {
-          m_polylineBuilder->addPoint(m_lastPosition);
-          std::unique_ptr<Graphic> lastPositionGraphic = std::make_unique<Graphic>(m_lastPosition, this);
-          m_locationHistoryPointOverlay->graphics()->append(lastPositionGraphic.get());
-          m_counter = 0;
-        }
-
         // store the current position
         m_lastPosition = location.position();
 
-        // update the polyline
-        m_locationHistoryLineGraphic->setGeometry(m_polylineBuilder->toGeometry());
+        if (m_lastPosition.isValid() && m_counter == 15)
+        {
+          // clear old route
+          m_locationHistoryLineGraphic->setGeometry(Geometry());
+
+          m_polylineBuilder->addPoint(m_lastPosition);
+          std::unique_ptr<Graphic> lastPositionGraphic = std::make_unique<Graphic>(m_lastPosition, this);
+          m_locationHistoryPointOverlay->graphics()->append(lastPositionGraphic.get());
+
+          // update the polyline
+          m_locationHistoryLineGraphic->setGeometry(m_polylineBuilder->toGeometry());
+
+          m_counter = 0;
+        }
     });
 }
 
