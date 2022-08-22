@@ -41,6 +41,7 @@ class DefaultLocationDataSource;
 #include "PolylineBuilder.h"
 #include "Basemap.h"
 #include "SimpleMarkerSymbol.h"
+#include "SimpleRenderer.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -89,6 +90,8 @@ private:
     Esri::ArcGISRuntime::GraphicsOverlay*                       m_locationHistoryPointOverlay;
     QVBoxLayout*                                                m_layoutLeftPanel;
     QVBoxLayout*                                                m_layoutRightPanel;
+    Esri::ArcGISRuntime::SimpleRenderer*                        m_rendererLine;
+    Esri::ArcGISRuntime::SimpleRenderer*                        m_rendererPoint;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
@@ -103,6 +106,7 @@ private:
     double m_latitude;
     double m_longitude;
     int m_counter{0};
+    int m_counter2{0};
 
     void setupViewPoint();
     void addMarker();
