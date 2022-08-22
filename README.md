@@ -28,7 +28,6 @@
 * Meanings of the layer data can be found here (from page 8):
 https://tlbg.thueringen.de/fileadmin/TLBG/Vertrieb/testdaten/dlm/4-4_03_basis-dlm-aaa.pdf
 
-
 * Install anaconda, create a new conda environment and activate it:
 
 `conda create -n simauto`
@@ -38,7 +37,10 @@ Afterwards, go to your other cloned folder cockpit-helper and run the following 
 
 `conda env update -n simauto --file environment.yaml && sudo apt-get install wmctrl scrot gawk && pip install guibot pyautogui opencv-python && chmod +x dumpxml.sh getwinidbyname.sh`
 
-* Install XPalneConnect.zip file:
+* Install Air Manager:
+https://siminnovations.com/wiki/index.php?title=Air_Manager_4.x_Installation
+ 
+* Install XPlaneConnect.zip file:
 https://github.com/nasa/XPlaneConnect/releases/tag/v1.3-rc5
 
 Unzip the .zip archive and copy the folder to the plugin directory (`[X-Plane Directory]/Resources/plugins/`)
@@ -55,6 +57,9 @@ https://siminnovations.com/wiki/index.php?title=Flight_Simulator_Plugins_Install
   or to test it quickly: `python3 read_gps.py`
 
   - Open Qt Creator and run the project
+
+## Known Problems
+Air Manager CPU usage is changing when 75" display is connected to the computer. It overloads the CPU, and this situation affects communication pipeline and GUI performance.   
 
 ## Contributions
 
