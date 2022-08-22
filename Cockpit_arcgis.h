@@ -40,6 +40,7 @@ class DefaultLocationDataSource;
 #include "PictureMarkerSymbol.h"
 #include "PolylineBuilder.h"
 #include "Basemap.h"
+#include "SimpleMarkerSymbol.h"
 
 class cockpitArcgis : public QMainWindow
 {
@@ -47,6 +48,10 @@ class cockpitArcgis : public QMainWindow
 public:
     explicit cockpitArcgis(QWidget* parent = nullptr);
     ~cockpitArcgis() override;
+
+
+signals:
+    void timeoutDetection(const bool result);
 
 public slots:
     void getCoordinate(QMouseEvent&);
@@ -58,6 +63,8 @@ public slots:
     void planeGpsPositionChanged(QVector<  double> newPosition);
     void updatesFromZmq(QVector<double> newAttributes);
     void setBaseMap(int);
+    void addNewPolyline(const bool);
+    void detectTimeout();
 
 private:
     Esri::ArcGISRuntime::Map*                                   m_map = nullptr;
@@ -78,8 +85,9 @@ private:
     Esri::ArcGISRuntime::PolylineBuilder*                       polylineBuilder = nullptr;
     Esri::ArcGISRuntime::Graphic*                               locationHistoryLineGraphic = nullptr;
     Esri::ArcGISRuntime::Basemap*                               basemap;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryPointOverlay;
-    std::unique_ptr<Esri::ArcGISRuntime::GraphicsOverlay>       locationHistoryLineOverlay;
+    Esri::ArcGISRuntime::SimpleLineSymbol*                      locationLineSymbol;
+    Esri::ArcGISRuntime::SimpleMarkerSymbol*                    locationPointSymbol;
+    Esri::ArcGISRuntime::GraphicsOverlay*                       locationHistoryPointOverlay;
 
     std::vector<QString> m_urlVectors;
     std::vector<QString> m_layerNames;
