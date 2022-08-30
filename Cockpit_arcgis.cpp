@@ -27,7 +27,6 @@
 #include "CoordinateFormatter.h"
 #include "AbstractLocationDataSource.h"
 #include "DefaultLocationDataSource.h"
-#include "SimpleRenderer.h"
 
 #include <zmq.hpp>
 #include<iostream>
@@ -37,7 +36,7 @@
 #include "positionsourcesimulator.h"
 #include "overlay.h"
 #include "circle.h"
-
+#include "layouts.h"
 
 using namespace Esri::ArcGISRuntime;
 
@@ -45,7 +44,7 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     QMainWindow(parent)
   , m_ui(new Ui::MainWindow)
 {
-    m_map = new Map(BasemapStyle::ArcGISNova, this);  // default ArcGISNova Basemap
+    m_map = new Map(BasemapStyle::ArcGISNova, this);  // set ArcGISNova Basemap as default
 
     // Create the Widget view
     m_mapView = new MapGraphicsView(this);
@@ -71,29 +70,13 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     // Set the layout to the related frame in the GUI
     m_ui->mapFrame->setLayout(m_layoutMap.release());  // relinquish ownership to avoid double delete
 
-    setWindowsIds();
     /* Integration of AirManager Panels */
+    Layouts layouts = Layouts();
+    m_layoutLeftPanel = layouts.createlayoutLeftPanel();
+    m_layoutRightPanel = layouts.createlayoutRightPanel();
+    m_ui->airManagerLeft->setLayout(m_layoutLeftPanel);
+    m_ui->airManagerRight->setLayout(m_layoutRightPanel);
 
-    // check if the ids get converted
-    bool leftOk;
-    bool rightOk;
-
-    long left = m_leftPaneId.toLong(&leftOk, 16);
-    long right = m_rightPaneId.toLong(&rightOk,16);
-
-    QWindow* leftPanelContainer = QWindow::fromWinId(left);
-    QWidget* leftPanelWidget = QWidget::createWindowContainer(leftPanelContainer);
-    QVBoxLayout* layoutLeftPanel = new QVBoxLayout();
-    layoutLeftPanel->addWidget(leftPanelWidget);
-    layoutLeftPanel->setContentsMargins(0, 0, 0, 0);
-    m_ui->airManagerLeft->setLayout(layoutLeftPanel);
-
-    QWindow* rightPanelContainer = QWindow::fromWinId(right);
-    QWidget* rightPanelWidget = QWidget::createWindowContainer(rightPanelContainer);
-    QVBoxLayout* layoutRightPanel = new QVBoxLayout();
-    layoutRightPanel->addWidget(rightPanelWidget);
-    layoutRightPanel->setContentsMargins(0, 0, 0, 0);
-    m_ui->airManagerRight->setLayout(layoutRightPanel);
     //create the action behaviours
     connect(m_mapView, SIGNAL(mouseClicked(QMouseEvent&)), this, SLOT(getCoordinate(QMouseEvent&)));
     connect(m_mapView, SIGNAL(mouseMoved(QMouseEvent&)), this, SLOT(displayCoordinate(QMouseEvent&)));
@@ -128,11 +111,10 @@ cockpitArcgis::cockpitArcgis(QWidget* parent /*=nullptr*/):
     addMarker();
     //popupInformation();
 
-    displayLocationTrail();
-
     createBaseMapMenu();
     connect(m_mapSignalMapper, SIGNAL(mappedInt(int)), this, SLOT(setBaseMap(int)));
 
+    displayLocationTrail();
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &cockpitArcgis::detectTimeout);
     timer->start(100);
@@ -156,6 +138,8 @@ cockpitArcgis::~cockpitArcgis()
 {
     m_mapView->locationDisplay()->stop();
     delete m_ui;
+    delete m_layoutLeftPanel;
+    delete m_layoutRightPanel;
 }
 
 /* class functions out-of-line definitions */
@@ -267,15 +251,32 @@ void cockpitArcgis::popupInformation(){
 
 // display location trails on the map
 void cockpitArcgis::displayLocationTrail(){
+    if (m_counter2 != 0){
+        delete m_locationHistoryPointOverlay;
+        delete m_locationLineSymbol;
+        delete m_rendererLine;
+        delete m_locationHistoryLineGraphic;
+        delete m_polylineBuilder;
+        delete m_locationPointSymbol;
+        delete m_rendererPoint;
+        m_locationHistoryPointOverlay = nullptr;
+        m_locationLineSymbol = nullptr;
+        m_rendererLine = nullptr;
+        m_locationHistoryLineGraphic = nullptr;
+        m_polylineBuilder = nullptr;
+        m_locationPointSymbol = nullptr;
+        m_rendererPoint = nullptr;
+    }
     // overlays to display location trails
     m_locationHistoryPointOverlay = new GraphicsOverlay(m_mapView);
-    GraphicsOverlay* locationHistoryLineOverlay = new GraphicsOverlay(m_mapView);
+    std::unique_ptr<GraphicsOverlay> locationHistoryLineOverlay = std::make_unique<GraphicsOverlay>(m_mapView);
     m_mapView->graphicsOverlays()->append(m_locationHistoryPointOverlay);
-    m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay);
+    m_mapView->graphicsOverlays()->append(locationHistoryLineOverlay.get());
 
     // graphics overlay for displaying the trail
     m_locationLineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle::Solid, QColor::fromRgb(QRandomGenerator::global()->generate()), 2, this);
-    locationHistoryLineOverlay->setRenderer(new SimpleRenderer(m_locationLineSymbol, this));
+    m_rendererLine = new SimpleRenderer(m_locationLineSymbol, this);
+    locationHistoryLineOverlay->setRenderer(m_rendererLine);
     m_locationHistoryLineGraphic = new Graphic(this);
     locationHistoryLineOverlay->graphics()->append(m_locationHistoryLineGraphic);
 
@@ -284,27 +285,32 @@ void cockpitArcgis::displayLocationTrail(){
 
     // graphics overlay for showing points
     m_locationPointSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle::Circle, QColor::fromRgb(QRandomGenerator::global()->generate()), 3, this);
-    m_locationHistoryPointOverlay->setRenderer(new SimpleRenderer(m_locationPointSymbol, this));
+    m_rendererPoint = new SimpleRenderer(m_locationPointSymbol, this);
+    m_locationHistoryPointOverlay->setRenderer(m_rendererPoint);
+
+    m_counter2++;
 
     connect(m_mapView->locationDisplay(), &LocationDisplay::locationChanged, this, [this](const Location& location)
     {
         m_counter++;
 
-        // clear old route
-        m_locationHistoryLineGraphic->setGeometry(Geometry());
-
-        if (m_lastPosition.isValid() && m_counter == 5)
-        {
-          m_polylineBuilder->addPoint(m_lastPosition);
-          m_locationHistoryPointOverlay->graphics()->append(new Graphic(m_lastPosition, this));
-          m_counter = 0;
-        }
-
         // store the current position
         m_lastPosition = location.position();
 
-        // update the polyline
-        m_locationHistoryLineGraphic->setGeometry(m_polylineBuilder->toGeometry());
+        if (m_lastPosition.isValid() && m_counter == 15)
+        {
+          // clear old route
+          m_locationHistoryLineGraphic->setGeometry(Geometry());
+
+          m_polylineBuilder->addPoint(m_lastPosition);
+          std::unique_ptr<Graphic> lastPositionGraphic = std::make_unique<Graphic>(m_lastPosition, this);
+          m_locationHistoryPointOverlay->graphics()->append(lastPositionGraphic.get());
+
+          // update the polyline
+          m_locationHistoryLineGraphic->setGeometry(m_polylineBuilder->toGeometry());
+
+          m_counter = 0;
+        }
     });
 }
 
@@ -317,6 +323,7 @@ void cockpitArcgis::detectTimeout(){
 void cockpitArcgis::addNewPolyline(const bool timeout){
     if (timeout){
         if (!m_polylineBuilder->isEmpty()){
+            qDebug() << "TIMEOUT Detected";
             displayLocationTrail();
         }
     }
@@ -405,31 +412,6 @@ void cockpitArcgis::setLayersUrlVector(){
             }
         }
     }
-}
-
-void cockpitArcgis::setWindowsIds()
-{
-    QFile xmlFile(":/windowsId.xml");
-
-    if(!xmlFile.open(QFile::ReadOnly | QFile::Text)){
-        qDebug() << "Cannot read file" << xmlFile.errorString();
-        exit(0);
-    }
-
-    QXmlStreamReader xmlReader(&xmlFile);
-
-    if (xmlReader.readNextStartElement()){
-        while(xmlReader.readNextStartElement()){
-            if (xmlReader.name() =="leftpane") {
-                m_leftPaneId = xmlReader.readElementText();
-            }
-
-            else if (xmlReader.name() =="rightpane") {
-                m_rightPaneId = xmlReader.readElementText();
-            }
-        }
-    }
-
 }
 
 void cockpitArcgis::planeGpsPositionChanged(QVector<double> newLocation){

@@ -38,6 +38,7 @@ win32:CONFIG += \
 SOURCES += \
     circle.cpp \
     coordinategrabber.cpp \
+    layouts.cpp \
     main.cpp \
     Cockpit_arcgis.cpp \
     overlay.cpp \
@@ -48,6 +49,7 @@ HEADERS += \
     Cockpit_arcgis.h \
     circle.h \
     coordinategrabber.h \
+    layouts.h \
     overlay.h \
     positionsourcesimulator.h \
     zmqreciever.h
