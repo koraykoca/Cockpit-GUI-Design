@@ -1,5 +1,7 @@
 # GUI Design for Cockpit using ArcGIS
 
+![cockpit](https://user-images.githubusercontent.com/20690194/188502961-1476ae96-e76c-4024-b1d6-75dcd2e3ba56.jpeg)
+
 ## System Setup
 
 * Install [Qt Framework _**5.15.2**_](https://developers.arcgis.com/qt/install-and-set-up/#download-the-qt-framework-for-linux-and-qt-creator) and        [ArcGIS Runtime SDK __*v100.14.1*__ for Qt API](https://developers.arcgis.com/qt/install-and-set-up/#install-arcgis-runtime-api-for-qt) on Linux.
